@@ -135,10 +135,11 @@ describe('formatScaled', () => {
 
   it('formats small and large values', () => {
     expect(formatScaled(123, su)).toBe('123');
-    expect(formatScaled(1200000000, su)).toBe('1.20B');
-    expect(formatScaled(1e48, su)).toBe('1.00Qid');
-    expect(formatScaled(59.44e72, su)).toBe('59.4Tvg');
+    expect(formatScaled(1200000000, su)).toBe('1.2B');
+    expect(formatScaled(1e48, su)).toBe('1Qid');
+    expect(formatScaled(59.44e72, su)).toBe('59.44Tvg');
     expect(formatScaled(1.418e84, su)).toBe('1.42Spvg');
+    expect(formatScaled(1e123, su)).toBe('1000Notg');
   });
 });
 

@@ -186,7 +186,7 @@ export function formatScaled(num: number, su: ScaleUtils): string {
     if (suffix && absNum >= multiplier) {
       const scaled = absNum / multiplier;
       if (scaled < 1000) {
-        return `${sign}${scaled.toPrecision(3)}${suffix}`;
+        return `${sign}${formatSuffixMantissa(scaled)}${suffix}`;
       }
     }
   }
@@ -194,10 +194,18 @@ export function formatScaled(num: number, su: ScaleUtils): string {
   const largest = su.formatEntries[0];
   if (largest) {
     const [suffix, multiplier] = largest;
-    return `${sign}${(absNum / multiplier).toPrecision(3)}${suffix}`;
+    return `${sign}${formatSuffixMantissa(absNum / multiplier)}${suffix}`;
   }
 
   return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
+}
+
+function formatSuffixMantissa(value: number): string {
+  if (value >= 1000) {
+    return value.toFixed(0);
+  }
+
+  return Number(value.toFixed(2)).toString();
 }
 
 export function formatNumericValue(value: NumericValue | null | undefined, su: ScaleUtils): string {
