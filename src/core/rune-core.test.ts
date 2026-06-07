@@ -1,28 +1,101 @@
-import { describe, it, expect } from 'vitest';
-import { 
-  buildScaleUtils, 
-  parseScaled, 
-  formatScaled, 
-  timeSeconds, 
-  processRunes,
+import { describe, expect, it } from 'vitest';
+import {
+  buildExclusiveProbabilities,
+  buildScaleUtils,
+  calculateMarkEstimate,
+  calculateMarksPerSecond,
   findNextUnderHour,
-  type ProcessedRune
+  formatScaled,
+  parseScaled,
+  processMarks
 } from './rune-core';
-import type { Scales, RuneRecord } from '../types';
+import type { MarkCategory, Scales } from '../types';
 
 const testScales: Scales = {
   '': 1,
-  'k': 1000,
-  'K': 1000,
-  'M': 1000000,
-  'B': 1000000000,
-  'T': 1000000000000
+  k: 1000,
+  K: 1000,
+  M: 1000000,
+  B: 1000000000,
+  T: 1000000000000
+};
+
+const testCategory: MarkCategory = {
+  id: 'Insight',
+  markId: 'MarkOfInsight',
+  displayName: 'Mark of Insight',
+  category: 'Normal',
+  currencyField: 'Insight',
+  costCurrencyName: 'Insight',
+  baseCostPerOpen: 250,
+  baseOpenIntervalSeconds: 0.5,
+  rollMode: 'CumulativeDenominator',
+  buttonAccentHex: null,
+  rollables: [
+    {
+      id: 'dim',
+      name: 'Dim',
+      tier: 1,
+      rarityText: '1/1',
+      cumulativeDenominator: 1,
+      baseCumulativeChanceAtLuck1: 1,
+      baseExclusiveDropChanceAtLuck1: 0.9,
+      isSecret: false,
+      isHidden: false,
+      ignoreMarksBoost: false,
+      showInBillboard: true,
+      showInMarksGuiWhenUnowned: true,
+      costPerBaseOpen: 250,
+      costCurrency: 'Insight',
+      requiredAmount: null,
+      effects: { BreakthroughLuckPerCopy: 0.001 },
+      effectCaps: { BreakthroughLuckPerCopy: 100 }
+    },
+    {
+      id: 'bright',
+      name: 'Bright',
+      tier: 2,
+      rarityText: '1/10',
+      cumulativeDenominator: 10,
+      baseCumulativeChanceAtLuck1: 0.1,
+      baseExclusiveDropChanceAtLuck1: 0.09,
+      isSecret: false,
+      isHidden: false,
+      ignoreMarksBoost: false,
+      showInBillboard: true,
+      showInMarksGuiWhenUnowned: true,
+      costPerBaseOpen: 250,
+      costCurrency: 'Insight',
+      requiredAmount: null,
+      effects: { MarkSpeedPerCopy: 0.1 },
+      effectCaps: { MarkSpeedPerCopy: 10 }
+    },
+    {
+      id: 'secret',
+      name: 'Secret',
+      tier: 3,
+      rarityText: '1/100',
+      cumulativeDenominator: 100,
+      baseCumulativeChanceAtLuck1: 0.01,
+      baseExclusiveDropChanceAtLuck1: 0.01,
+      isSecret: false,
+      isHidden: true,
+      ignoreMarksBoost: false,
+      showInBillboard: false,
+      showInMarksGuiWhenUnowned: false,
+      costPerBaseOpen: 250,
+      costCurrency: 'Insight',
+      requiredAmount: null,
+      effects: { MarkCloneFlatAddPerCopy: 1 },
+      effectCaps: { MarkCloneFlatAddPerCopy: 1 }
+    }
+  ]
 };
 
 describe('buildScaleUtils', () => {
-  it('should build scale utilities correctly', () => {
+  it('builds scale utilities and detects ambiguous suffixes', () => {
     const su = buildScaleUtils(testScales);
-    
+
     expect(su.scaleEntries).toEqual([
       ['', 1],
       ['T', 1000000000000],
@@ -31,8 +104,6 @@ describe('buildScaleUtils', () => {
       ['k', 1000],
       ['K', 1000]
     ]);
-    
-    expect(su.lowerCaseScaleMap['k']).toEqual(['k', 'K']);
     expect(su.conflictingLowerCaseSuffixes.has('k')).toBe(true);
   });
 });
@@ -40,135 +111,106 @@ describe('buildScaleUtils', () => {
 describe('parseScaled', () => {
   const su = buildScaleUtils(testScales);
 
-  it('should parse simple numbers', () => {
+  it('parses raw, scientific, and suffix values', () => {
     expect(parseScaled('123', su)).toEqual({ value: 123, warning: null });
-    expect(parseScaled('0', su)).toEqual({ value: 0, warning: null });
-  });
-
-  it('should parse scientific notation', () => {
-    expect(parseScaled('1e9', su)).toEqual({ value: 1e9, warning: null });
-    expect(parseScaled('1.5E6', su)).toEqual({ value: 1.5e6, warning: null });
-  });
-
-  it('should parse suffix notation', () => {
-    const result1 = parseScaled('1.5k', su);
-    expect(result1.value).toBe(1500);
-    expect(result1.warning).toContain('Ambiguous suffix');
-    
+    expect(parseScaled('1.5E6', su)).toEqual({ value: 1500000, warning: null });
     expect(parseScaled('499.99T', su)).toEqual({ value: 499.99e12, warning: null });
   });
 
-  it('should handle invalid inputs', () => {
-    expect(parseScaled('', su).value).toBe(0);
-    expect(parseScaled('abc', su).value).toBe(0);
-    expect(parseScaled('1.5x', su).value).toBe(1.5); // Parses 1.5 and ignores invalid suffix
-  });
-
-  it('should warn about ambiguous suffixes', () => {
+  it('warns for ambiguous suffixes', () => {
     const result = parseScaled('1k', su);
     expect(result.value).toBe(1000);
     expect(result.warning).toContain('Ambiguous suffix');
+  });
+
+  it('rejects invalid inputs', () => {
+    expect(parseScaled('', su).value).toBe(0);
+    expect(parseScaled('abc', su).value).toBe(0);
+    expect(parseScaled('1.5x', su).value).toBe(0);
   });
 });
 
 describe('formatScaled', () => {
   const su = buildScaleUtils(testScales);
 
-  it('should format small numbers without suffix', () => {
+  it('formats small and large values', () => {
     expect(formatScaled(123, su)).toBe('123');
-    expect(formatScaled(999, su)).toBe('999');
-  });
-
-  it('should format large numbers with suffix', () => {
     expect(formatScaled(1200000000, su)).toBe('1.20 B');
-    expect(formatScaled(1.2345e9, su)).toBe('1.23 B');
+    expect(formatScaled(1e60, su)).toBe('1.000e+60');
   });
 });
 
-describe('timeSeconds', () => {
-  it('should calculate time correctly', () => {
-    expect(timeSeconds(10, 2, 1000000)).toBe(50000);
-    expect(timeSeconds(1, 1, 100)).toBe(100);
+describe('mark probability math', () => {
+  it('uses provided base exclusive chances at Mark Luck 1', () => {
+    const probabilities = buildExclusiveProbabilities(testCategory, 1);
+
+    expect(probabilities.get('dim')).toBe(0.9);
+    expect(probabilities.get('bright')).toBe(0.09);
+    expect(probabilities.get('secret')).toBe(0.01);
   });
 
-  it('should return Infinity for invalid inputs', () => {
-    expect(timeSeconds(0, 1, 100)).toBe(Infinity);
-    expect(timeSeconds(1, 0, 100)).toBe(Infinity);
-    expect(timeSeconds(-1, 1, 100)).toBe(Infinity);
+  it('recomputes exclusive tier probabilities from cumulative denominators at higher luck', () => {
+    const probabilities = buildExclusiveProbabilities(testCategory, 10);
+
+    expect(probabilities.get('dim')).toBe(0);
+    expect(probabilities.get('bright')).toBe(0.9);
+    expect(probabilities.get('secret')).toBe(0.1);
+  });
+
+  it('calculates marks per second from speed, interval, and bulk', () => {
+    expect(calculateMarksPerSecond(2, 3, 0.5)).toBe(12);
+    expect(calculateMarksPerSecond(0, 3, 0.5)).toBe(0);
+  });
+
+  it('calculates target ETA with clone amplification', () => {
+    const estimate = calculateMarkEstimate(
+      testCategory,
+      testCategory.rollables[1],
+      1,
+      1,
+      1,
+      2,
+      4
+    );
+
+    expect(estimate.marksPerSecond).toBe(2);
+    expect(estimate.exclusiveTierProbability).toBe(0.09);
+    expect(estimate.expectedCopiesPerHour).toBe(1296);
+    expect(estimate.secondsForTargetCopies).toBeCloseTo(11.1111);
   });
 });
 
-describe('processRunes', () => {
-  const testRunes: RuneRecord[] = [
-    {
-      id: 'fast',
-      name: 'Fast Rune',
-      category: 'Starter',
-      hidden: false,
-      sourceNote: 'Quick to get',
-      chance: { type: 'oneInN', n: 10, display: '1/10' },
-      boosts: []
-    },
-    {
-      id: 'slow',
-      name: 'Slow Rune',
-      category: 'Magical',
-      hidden: false,
-      sourceNote: 'Takes a while',
-      chance: { type: 'oneInN', n: 1000000, display: '1/1M' },
-      boosts: []
-    }
-  ];
-
-  it('should process runes with time calculations', () => {
-    const processed = processRunes(testRunes, 1, 1, {});
-    
-    expect(processed).toHaveLength(2);
-    expect(processed[0].time).toBe(10);
-    expect(processed[1].time).toBe(1000000);
-    expect(processed[0].isSpecial).toBe(false);
+describe('processMarks', () => {
+  it('filters hidden marks unless secrets are enabled', () => {
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1)).toHaveLength(2);
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { showSecret: true })).toHaveLength(3);
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { secretFilter: 'secret' })).toHaveLength(1);
   });
 
-  it('should filter by text', () => {
-    const processed = processRunes(testRunes, 1, 1, { text: 'fast' });
-    expect(processed).toHaveLength(1);
-    expect(processed[0].id).toBe('fast');
+  it('filters by text, tier, category, and effect type', () => {
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { text: 'bright' })[0].id).toBe('bright');
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { tier: 2 })[0].id).toBe('bright');
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { categoryId: 'Insight' })).toHaveLength(2);
+    expect(processMarks([testCategory], 1, 1, 1, 1, 1, { effectType: 'MarkSpeedPerCopy' })[0].id).toBe('bright');
   });
 
-  it('should hide instant runes', () => {
-    const processed = processRunes(testRunes, 100, 1, { hideInstant: true });
-    expect(processed).toHaveLength(1);
-    expect(processed[0].id).toBe('slow');
-  });
+  it('sorts by target ETA', () => {
+    const asc = processMarks([testCategory], 1, 1, 1, 1, 1, { sort: 'asc' });
+    const desc = processMarks([testCategory], 1, 1, 1, 1, 1, { sort: 'desc' });
 
-  it('should sort by time', () => {
-    const ascProcessed = processRunes(testRunes, 1, 1, { sort: 'asc' });
-    expect(ascProcessed[0].id).toBe('fast');
-    expect(ascProcessed[1].id).toBe('slow');
-
-    const descProcessed = processRunes(testRunes, 1, 1, { sort: 'desc' });
-    expect(descProcessed[0].id).toBe('slow');
-    expect(descProcessed[1].id).toBe('fast');
+    expect(asc[0].id).toBe('dim');
+    expect(desc[0].id).toBe('bright');
   });
 });
 
 describe('findNextUnderHour', () => {
-  it('should find the next target under one hour', () => {
-    const processedRunes: ProcessedRune[] = [
-      { id: 'instant', time: 0.5, isSpecial: false, name: '', category: 'Starter', hidden: false, sourceNote: '', chance: { type: 'oneInN', n: 1, display: '' }, boosts: [] },
-      { id: 'target', time: 1800, isSpecial: false, name: '', category: 'Starter', hidden: false, sourceNote: '', chance: { type: 'oneInN', n: 1, display: '' }, boosts: [] },
-      { id: 'long', time: 7200, isSpecial: false, name: '', category: 'Starter', hidden: false, sourceNote: '', chance: { type: 'oneInN', n: 1, display: '' }, boosts: [] },
-    ];
-
-    expect(findNextUnderHour(processedRunes)).toBe('target');
+  it('finds the first non-instant target under an hour', () => {
+    const processed = processMarks([testCategory], 1, 1, 1, 1, 1, { sort: 'asc' });
+    expect(findNextUnderHour(processed)).toBe('bright');
   });
 
-  it('should return null if no valid target found', () => {
-    const processedRunes: ProcessedRune[] = [
-      { id: 'instant', time: 0.5, isSpecial: false, name: '', category: 'Starter', hidden: false, sourceNote: '', chance: { type: 'oneInN', n: 1, display: '' }, boosts: [] },
-      { id: 'long', time: 7200, isSpecial: false, name: '', category: 'Starter', hidden: false, sourceNote: '', chance: { type: 'oneInN', n: 1, display: '' }, boosts: [] },
-    ];
-
-    expect(findNextUnderHour(processedRunes)).toBeNull();
+  it('returns null if no visible mark fits the window', () => {
+    const processed = processMarks([testCategory], 1e9, 1, 1, 1, 1);
+    expect(findNextUnderHour(processed)).toBeNull();
   });
 });

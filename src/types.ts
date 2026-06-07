@@ -1,35 +1,58 @@
-// Data types for the rune calculator application
+export type NumericValue = number | {
+  mantissa: number;
+  exponent: number;
+};
 
-export interface RuneChance {
-  type: 'oneInN';
-  n: number;
-  display: string;
+export interface MarkEffectCurve {
+  maxMultiplier: NumericValue;
+  hardCapCopies: NumericValue;
+  curveExponent: number;
 }
 
-export interface RuneBoost {
-  type: string;
-  mode: 'multiplier';
-  cap: number | null;
-  capStatus: 'notCapped' | 'capped' | 'notMaxedYet' | 'unknown';
-  notes?: string[];
-}
-
-export interface RuneRecord {
+export interface MarkRollable {
   id: string;
   name: string;
-  category: 'Starter' | 'Magical' | 'Space';
-  rarity?: string;
-  hidden: boolean;
-  sourceNote: string;
-  chance: RuneChance;
-  boosts: RuneBoost[];
+  tier: number;
+  gradientId?: string;
+  rarityText: string;
+  cumulativeDenominator: number;
+  baseCumulativeChanceAtLuck1: number;
+  baseExclusiveDropChanceAtLuck1: number;
+  isSecret: boolean;
+  isHidden: boolean;
+  ignoreMarksBoost: boolean;
+  showInBillboard: boolean;
+  showInMarksGuiWhenUnowned: boolean;
+  costPerBaseOpen: number;
+  costCurrency: string;
+  requiredAmount: NumericValue | null;
+  requiredAmountSourceNote?: string;
+  effects: Record<string, number>;
+  effectCaps: Record<string, NumericValue>;
+  effectCurves?: Record<string, MarkEffectCurve>;
 }
 
-export interface RunesData {
-  version: string;
-  generatedAt: string;
-  scalesVersion: string;
-  runes: RuneRecord[];
+export interface MarkCategory {
+  id: string;
+  markId: string;
+  displayName: string;
+  category: string;
+  currencyField: string;
+  costCurrencyName: string;
+  baseCostPerOpen: number;
+  baseOpenIntervalSeconds: number;
+  rollMode: string;
+  buttonAccentHex: string | null;
+  rollables: MarkRollable[];
+}
+
+export interface MarksData {
+  generatedOn: string;
+  generatedFrom: string;
+  normalCategoryCount: number;
+  notes: string[];
+  formulas: Record<string, string>;
+  categories: MarkCategory[];
 }
 
 export type Scales = Record<string, number>;

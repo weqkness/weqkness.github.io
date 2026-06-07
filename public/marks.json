@@ -1,0 +1,3591 @@
+{
+  "generatedOn": "2026-06-07",
+  "generatedFrom": "src/ReplicatedStorage/Modules/Marks/MarkConfig.lua",
+  "normalCategoryCount": 10,
+  "notes": [
+    "The source calls these runes Marks. This export uses the user-facing category names requested for calculator import.",
+    "Normal categories use category-level baseCostPerOpen; there is no per-rollable purchase cost in source.",
+    "baseCumulativeChanceAtLuck1 is min(1, 1 / cumulativeDenominator) for tier 2+ and 1 for tier 1.",
+    "baseExclusiveDropChanceAtLuck1 is computed with NormalMarkCommon.BuildTierProbabilities at MarkLuck = 1.",
+    "At exactly x1 MarkLuck, the UI displays rarityText instead of the computed exclusive chance.",
+    "effectCaps cap copies used for that specific effect, not inventory ownership.",
+    "effectCurves replace linear per-copy effect math for the listed effect keys.",
+    "Hidden or isSecret rollables are still in the same normal roll table; no extra unlock requirement is defined in MarkConfig or the button runtime.",
+    "Time estimates below assume enough currency to pay baseCostPerOpen for every open; the runtime still gates by affordability."
+  ],
+  "formulas": {
+    "normalRollMode": "CumulativeDenominator",
+    "thresholdChance": "threshold[i] = clamp(MarkLuck / cumulativeDenominator[i], 0, 1) for tiers i >= 2",
+    "exclusiveTierProbability": "p[1] = 1 - threshold[2]; p[i] = threshold[i] - threshold[i+1] for middle tiers; p[last] = threshold[last]; then normalize if needed",
+    "markSpeedPerSecond": "MarkSpeed / baseOpenIntervalSeconds",
+    "marksPerSecond": "(MarkSpeed / baseOpenIntervalSeconds) * MarkBulk",
+    "bulkOpenIncrement": "floor(accumulated open pulses) * MarkBulk",
+    "cloneApplication": "Roll base opens first, then multiply gained copies by MarkClone.",
+    "linearEffectMultiplier": "runningMultiplier *= 1 + min(copies, effectCap) * perCopy * normalMarksBoostMultiplier",
+    "curveEffectMultiplier": "runningMultiplier *= 1 + ((maxMultiplier * normalMarksBoostMultiplier - 1) * clamp((copies / hardCapCopies) ^ curveExponent, 0, 1))",
+    "expectedSecondsForFirstBaseDrop": "1 / (marksPerSecond * exclusiveTierProbability), assuming enough currency and MarkLuck enabled",
+    "expectedSecondsForTargetCopies": "targetCopies / (marksPerSecond * exclusiveTierProbability * MarkClone), approximation after clone amplification",
+    "globalWeightedChance": "weight / sum(weights); MarkLuck is not applied to global marks"
+  },
+  "unresolvedFromSource": [
+    "Whether hidden unboosted rollables without isSecret=true, currently RevengeSigil and Apotheosis, should be labeled Secret in the external calculator.",
+    "Whether calculator time estimates should include currency income constraints or only use mark opening rate once currency is available."
+  ],
+  "bonusRewards": {
+    "Enabled": true,
+    "RollCooldownSeconds": 3,
+    "Rewards": [
+      {
+        "type": "Potion",
+        "amount": 1,
+        "chance": 0.0016666666666666668
+      },
+      {
+        "type": "Jade",
+        "amount": 1,
+        "chance": 0.0008333333333333334
+      },
+      {
+        "type": "Ticket",
+        "amount": 1,
+        "chance": 0.0008333333333333334
+      }
+    ]
+  },
+  "categories": [
+    {
+      "id": "Insight",
+      "markId": "MarkOfInsight",
+      "displayName": "Mark of Insight",
+      "category": "Normal",
+      "currencyField": "Insight",
+      "costCurrencyName": "Insight",
+      "baseCostPerOpen": 250,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "DimFlicker",
+          "name": "Dim",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.00045
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 20000
+          }
+        },
+        {
+          "id": "QuietSense",
+          "name": "Aware",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/10",
+          "cumulativeDenominator": 10,
+          "baseCumulativeChanceAtLuck1": 0.1,
+          "baseExclusiveDropChanceAtLuck1": 0.08,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.001875,
+            "BreakthroughLuckPerCopy": 0.0002,
+            "InsightGainMultiplierPerCopy": 0.0005
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 8000,
+            "BreakthroughLuckPerCopy": 2500,
+            "InsightGainMultiplierPerCopy": 2000
+          }
+        },
+        {
+          "id": "ClearRead",
+          "name": "Keen",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/50",
+          "cumulativeDenominator": 50,
+          "baseCumulativeChanceAtLuck1": 0.02,
+          "baseExclusiveDropChanceAtLuck1": 0.018229323333332333,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.001,
+            "InsightGainMultiplierPerCopy": 0.002
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 4000,
+            "InsightGainMultiplierPerCopy": 1000
+          }
+        },
+        {
+          "id": "SharpEye",
+          "name": "Clear",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/600",
+          "cumulativeDenominator": 564.755846634583,
+          "baseCumulativeChanceAtLuck1": 0.0017706766666676678,
+          "baseExclusiveDropChanceAtLuck1": 0.0016666666666666679,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.0195,
+            "BreakthroughLuckPerCopy": 0.005,
+            "InsightGainMultiplierPerCopy": 0.005,
+            "EssenceGainMultiplierPerCopy": 0.0025
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 2000,
+            "BreakthroughLuckPerCopy": 1200,
+            "InsightGainMultiplierPerCopy": 400,
+            "EssenceGainMultiplierPerCopy": 200
+          }
+        },
+        {
+          "id": "DeepFocus",
+          "name": "Piercing",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/10K",
+          "cumulativeDenominator": 9614.46014797025,
+          "baseCumulativeChanceAtLuck1": 0.00010401000000099998,
+          "baseExclusiveDropChanceAtLuck1": 9.999999999999998e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.1,
+            "BreakthroughLuckPerCopy": 0.02,
+            "EssenceGainMultiplierPerCopy": 0.015
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 740,
+            "BreakthroughLuckPerCopy": 350,
+            "EssenceGainMultiplierPerCopy": 100
+          }
+        },
+        {
+          "id": "TrueSight",
+          "name": "Deepseeing",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/250K",
+          "cumulativeDenominator": 249376.558541303,
+          "baseCumulativeChanceAtLuck1": 4.010000000999993e-06,
+          "baseExclusiveDropChanceAtLuck1": 3.999999999999993e-06,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 1,
+            "InsightGainMultiplierPerCopy": 0.1,
+            "SoulfireGainMultiplierPerCopy": 0.075
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 149,
+            "InsightGainMultiplierPerCopy": 30,
+            "SoulfireGainMultiplierPerCopy": 20
+          }
+        },
+        {
+          "id": "InnerVision",
+          "name": "Farsight",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/100M",
+          "cumulativeDenominator": 99999990.000001,
+          "baseCumulativeChanceAtLuck1": 1.0000001e-08,
+          "baseExclusiveDropChanceAtLuck1": 1e-08,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 3,
+            "BreakthroughLuckPerCopy": 0.25,
+            "EssenceGainMultiplierPerCopy": 0.2
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 83,
+            "BreakthroughLuckPerCopy": 52,
+            "EssenceGainMultiplierPerCopy": 15
+          }
+        },
+        {
+          "id": "PureClarity",
+          "name": "Truesight",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/1Qa",
+          "cumulativeDenominator": 1000000000000000.0,
+          "baseCumulativeChanceAtLuck1": 1e-15,
+          "baseExclusiveDropChanceAtLuck1": 1e-15,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 1,
+            "InsightGainMultiplierPerCopy": 1,
+            "SoulfireGainMultiplierPerCopy": 0.8,
+            "StarsMultiplierPerCopy": 0.2,
+            "MarkBulkPerCopy": 0.5,
+            "MarkSpeedPerCopy": 0.25
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 19,
+            "InsightGainMultiplierPerCopy": 5,
+            "SoulfireGainMultiplierPerCopy": 5,
+            "StarsMultiplierPerCopy": 5,
+            "MarkBulkPerCopy": 3,
+            "MarkSpeedPerCopy": 5
+          }
+        },
+        {
+          "id": "TotalKnowing",
+          "name": "Omniscience",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/750DDe",
+          "cumulativeDenominator": 7.5e+41,
+          "baseCumulativeChanceAtLuck1": 1.3333333333333333e-42,
+          "baseExclusiveDropChanceAtLuck1": 1.3333333333333333e-42,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 250,
+          "costCurrency": "Insight",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 49.9,
+            "BreakthroughLuckPerCopy": 5.8,
+            "InsightGainMultiplierPerCopy": 3,
+            "EssenceGainMultiplierPerCopy": 2.25,
+            "SoulfireGainMultiplierPerCopy": 1,
+            "BeastRemnantGainMultiplierPerCopy": 0.5,
+            "MarkBulkPerCopy": 0.5,
+            "MarkSpeedPerCopy": 0.4,
+            "MarkLuckPerCopy": 0.5
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 10,
+            "BreakthroughLuckPerCopy": 5,
+            "InsightGainMultiplierPerCopy": 3,
+            "EssenceGainMultiplierPerCopy": 4,
+            "SoulfireGainMultiplierPerCopy": 7,
+            "BeastRemnantGainMultiplierPerCopy": 8,
+            "MarkBulkPerCopy": 4,
+            "MarkLuckPerCopy": 2,
+            "MarkSpeedPerCopy": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "Essence",
+      "markId": "MarkOfEssence",
+      "displayName": "Mark of Essence",
+      "category": "Normal",
+      "currencyField": "Essence",
+      "costCurrencyName": "Essence",
+      "baseCostPerOpen": 100000000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "EmberSpeck",
+          "name": "Fragment",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9166666666666666,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.00145,
+            "BreakthroughLuckPerCopy": 0.0003
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 20000,
+            "BreakthroughLuckPerCopy": 180000
+          }
+        },
+        {
+          "id": "WarmShard",
+          "name": "Shard",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/12",
+          "cumulativeDenominator": 12,
+          "baseCumulativeChanceAtLuck1": 0.08333333333333333,
+          "baseExclusiveDropChanceAtLuck1": 0.06666666666666667,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 0.004,
+            "QiMultiplierPerCopy": 0.0012,
+            "BreakthroughLuckPerCopy": 0.000386666666666667
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 28500,
+            "QiMultiplierPerCopy": 45000,
+            "BreakthroughLuckPerCopy": 75000
+          }
+        },
+        {
+          "id": "ScarletNode",
+          "name": "Node",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/60",
+          "cumulativeDenominator": 60,
+          "baseCumulativeChanceAtLuck1": 0.016666666666666666,
+          "baseExclusiveDropChanceAtLuck1": 0.015333333333333332,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.001,
+            "InsightGainMultiplierPerCopy": 0.0008
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 24000,
+            "InsightGainMultiplierPerCopy": 142500
+          }
+        },
+        {
+          "id": "CrimsonBloom",
+          "name": "Crest",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/750",
+          "cumulativeDenominator": 750,
+          "baseCumulativeChanceAtLuck1": 0.0013333333333333333,
+          "baseExclusiveDropChanceAtLuck1": 0.0012666666666666666,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 0.04,
+            "QiMultiplierPerCopy": 0.00916666666666667,
+            "BreakthroughLuckPerCopy": 0.003
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 525,
+            "QiMultiplierPerCopy": 1200,
+            "BreakthroughLuckPerCopy": 19000
+          }
+        },
+        {
+          "id": "RubyCore",
+          "name": "Ruby",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/15K",
+          "cumulativeDenominator": 15000,
+          "baseCumulativeChanceAtLuck1": 6.666666666666667e-05,
+          "baseExclusiveDropChanceAtLuck1": 6.416666666666666e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 0.195238095238095,
+            "BreakthroughLuckPerCopy": 0.03
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 210,
+            "BreakthroughLuckPerCopy": 1300
+          }
+        },
+        {
+          "id": "Heartfire",
+          "name": "Nucleus",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/400K",
+          "cumulativeDenominator": 400000,
+          "baseCumulativeChanceAtLuck1": 2.5e-06,
+          "baseExclusiveDropChanceAtLuck1": 2.4933333333333337e-06,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 1,
+            "BreakthroughLuckPerCopy": 0.2,
+            "SoulfireGainMultiplierPerCopy": 0.05,
+            "MarkSpeedPerCopy": 0.25
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 59,
+            "BreakthroughLuckPerCopy": 170,
+            "SoulfireGainMultiplierPerCopy": 30,
+            "MarkSpeedPerCopy": 3
+          }
+        },
+        {
+          "id": "PhoenixSoul",
+          "name": "Prism",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/150M",
+          "cumulativeDenominator": 150000000,
+          "baseCumulativeChanceAtLuck1": 6.666666666666667e-09,
+          "baseExclusiveDropChanceAtLuck1": 6.666666166666667e-09,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 3,
+            "QiMultiplierPerCopy": 1,
+            "InsightGainMultiplierPerCopy": 0.3,
+            "BeastRemnantGainMultiplierPerCopy": 0.05
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 53,
+            "QiMultiplierPerCopy": 79,
+            "InsightGainMultiplierPerCopy": 30,
+            "BeastRemnantGainMultiplierPerCopy": 30
+          }
+        },
+        {
+          "id": "EternalPrism",
+          "name": "Eternal",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/2Qa",
+          "cumulativeDenominator": 2000000000000000.0,
+          "baseCumulativeChanceAtLuck1": 5e-16,
+          "baseExclusiveDropChanceAtLuck1": 5e-16,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 23,
+            "QiMultiplierPerCopy": 7.45,
+            "BreakthroughLuckPerCopy": 1.5,
+            "SoulfireGainMultiplierPerCopy": 1,
+            "StarsMultiplierPerCopy": 0.2,
+            "MarkBulkPerCopy": 0.2,
+            "MarkSpeedPerCopy": 0.25
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 13,
+            "QiMultiplierPerCopy": 20,
+            "BreakthroughLuckPerCopy": 16,
+            "SoulfireGainMultiplierPerCopy": 5,
+            "StarsMultiplierPerCopy": 5,
+            "MarkBulkPerCopy": 5,
+            "MarkSpeedPerCopy": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "Soulfire",
+      "markId": "MarkOfSoulfire",
+      "displayName": "Mark of Soulfire",
+      "category": "Normal",
+      "currencyField": "Soulfire",
+      "costCurrencyName": "Soulfire",
+      "baseCostPerOpen": 5000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "SoulMote",
+          "name": "Mote",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.975,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.0002,
+            "EssenceGainMultiplierPerCopy": 2.5e-05,
+            "SoulfireGainMultiplierPerCopy": 5e-05
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 45000,
+            "EssenceGainMultiplierPerCopy": 280000,
+            "SoulfireGainMultiplierPerCopy": 20000
+          }
+        },
+        {
+          "id": "PaleKindling",
+          "name": "Kindling",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/40",
+          "cumulativeDenominator": 40,
+          "baseCumulativeChanceAtLuck1": 0.025,
+          "baseExclusiveDropChanceAtLuck1": 0.022500000000000003,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.0004,
+            "InsightGainMultiplierPerCopy": 0.0005,
+            "SoulfireGainMultiplierPerCopy": 0.00015
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 25000,
+            "InsightGainMultiplierPerCopy": 34000,
+            "SoulfireGainMultiplierPerCopy": 20000
+          }
+        },
+        {
+          "id": "WraithSpark",
+          "name": "Wraith",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/400",
+          "cumulativeDenominator": 400,
+          "baseCumulativeChanceAtLuck1": 0.0025,
+          "baseExclusiveDropChanceAtLuck1": 0.0024333333333333334,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.0005,
+            "KarmaGainMultiplierPerCopy": 8e-05
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 14000,
+            "KarmaGainMultiplierPerCopy": 12500
+          }
+        },
+        {
+          "id": "GhostPyre",
+          "name": "Pyre",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/15K",
+          "cumulativeDenominator": 15000,
+          "baseCumulativeChanceAtLuck1": 6.666666666666667e-05,
+          "baseExclusiveDropChanceAtLuck1": 5.416666666666667e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.0034,
+            "SoulfireGainMultiplierPerCopy": 0.0036,
+            "BeastRemnantGainMultiplierPerCopy": 0.0006,
+            "MarkSpeedPerCopy": 0.1
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 5000,
+            "SoulfireGainMultiplierPerCopy": 2500,
+            "BeastRemnantGainMultiplierPerCopy": 5000,
+            "MarkSpeedPerCopy": 5
+          }
+        },
+        {
+          "id": "SoulBrand",
+          "name": "Brand",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/80K",
+          "cumulativeDenominator": 80000,
+          "baseCumulativeChanceAtLuck1": 1.25e-05,
+          "baseExclusiveDropChanceAtLuck1": 1.2333333333333334e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.04,
+            "QiMultiplierPerCopy": 0.05,
+            "KarmaGainMultiplierPerCopy": 0.008
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 475,
+            "QiMultiplierPerCopy": 680,
+            "KarmaGainMultiplierPerCopy": 375
+          }
+        },
+        {
+          "id": "NetherInferno",
+          "name": "Inferno",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/6M",
+          "cumulativeDenominator": 6000000,
+          "baseCumulativeChanceAtLuck1": 1.6666666666666668e-07,
+          "baseExclusiveDropChanceAtLuck1": 1.6666466666666667e-07,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "EssenceGainMultiplierPerCopy": 0.25,
+            "SoulfireGainMultiplierPerCopy": 0.1,
+            "BeastRemnantGainMultiplierPerCopy": 0.125,
+            "MarkBulkPerCopy": 0.25
+          },
+          "effectCaps": {
+            "EssenceGainMultiplierPerCopy": 96,
+            "SoulfireGainMultiplierPerCopy": 190,
+            "BeastRemnantGainMultiplierPerCopy": 64,
+            "MarkBulkPerCopy": 3
+          }
+        },
+        {
+          "id": "Everflame",
+          "name": "Everflame",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/500B",
+          "cumulativeDenominator": 500000000000,
+          "baseCumulativeChanceAtLuck1": 2e-12,
+          "baseExclusiveDropChanceAtLuck1": 2e-12,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.5,
+            "QiMultiplierPerCopy": 2,
+            "EssenceGainMultiplierPerCopy": 1.5,
+            "SoulfireGainMultiplierPerCopy": 0.5,
+            "MarkBulkPerCopy": 0.25,
+            "BeastCoreChanceMultiplierPerCopy": 0.25
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 58,
+            "QiMultiplierPerCopy": 40,
+            "EssenceGainMultiplierPerCopy": 26,
+            "SoulfireGainMultiplierPerCopy": 58,
+            "MarkBulkPerCopy": 4,
+            "BeastCoreChanceMultiplierPerCopy": 1
+          }
+        },
+        {
+          "id": "Soulnova",
+          "name": "Soulnova",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/2No",
+          "cumulativeDenominator": 2e+30,
+          "baseCumulativeChanceAtLuck1": 4.9999999999999995e-31,
+          "baseExclusiveDropChanceAtLuck1": 4.9999999999999995e-31,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 10,
+            "SoulfireGainMultiplierPerCopy": 5,
+            "BeastRemnantGainMultiplierPerCopy": 0.25,
+            "MarkBulkPerCopy": 0.5,
+            "MarkSpeedPerCopy": 0.3,
+            "MarkLuckPerCopy": 0.25
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 18,
+            "SoulfireGainMultiplierPerCopy": 12,
+            "BeastRemnantGainMultiplierPerCopy": 4,
+            "MarkBulkPerCopy": 4,
+            "MarkSpeedPerCopy": 5,
+            "MarkLuckPerCopy": 4
+          }
+        },
+        {
+          "id": "Deity",
+          "name": "Deity",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/1.28Qivg",
+          "cumulativeDenominator": 1.28e+78,
+          "baseCumulativeChanceAtLuck1": 7.8125e-79,
+          "baseExclusiveDropChanceAtLuck1": 7.8125e-79,
+          "isSecret": true,
+          "isHidden": true,
+          "ignoreMarksBoost": true,
+          "showInBillboard": false,
+          "showInMarksGuiWhenUnowned": false,
+          "costPerBaseOpen": 5000,
+          "costCurrency": "Soulfire",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "CitizenGainMultiplierPerCopy": 0.0008,
+            "FaithGainMultiplierPerCopy": 0.0004,
+            "KarmaGainMultiplierPerCopy": 8.9998,
+            "QiMultiplierPerCopy": 1e+24,
+            "LawsGainMultiplierPerCopy": 0.0058,
+            "DamageMultiplierPerCopy": 0.0004
+          },
+          "effectCaps": {
+            "CitizenGainMultiplierPerCopy": 5000,
+            "FaithGainMultiplierPerCopy": 5000,
+            "KarmaGainMultiplierPerCopy": 5000,
+            "QiMultiplierPerCopy": 5000,
+            "LawsGainMultiplierPerCopy": 5000,
+            "DamageMultiplierPerCopy": 5000
+          }
+        }
+      ]
+    },
+    {
+      "id": "Karma",
+      "markId": "MarkOfKarma",
+      "displayName": "Mark of Karma",
+      "category": "Normal",
+      "currencyField": "Karma",
+      "costCurrencyName": "Karma",
+      "baseCostPerOpen": 50,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "AshenTrace",
+          "name": "Trace",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.975,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 1.33333333333333e-05,
+            "KarmaGainMultiplierPerCopy": 1.33333333333333e-05
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 300000,
+            "KarmaGainMultiplierPerCopy": 300000
+          }
+        },
+        {
+          "id": "SilentLedger",
+          "name": "Ledger",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/40",
+          "cumulativeDenominator": 40,
+          "baseCumulativeChanceAtLuck1": 0.025,
+          "baseExclusiveDropChanceAtLuck1": 0.022500000000000003,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 6.66666666666667e-05,
+            "KarmaGainMultiplierPerCopy": 5e-05,
+            "SoulfireGainMultiplierPerCopy": 5e-05
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 60000,
+            "KarmaGainMultiplierPerCopy": 60000,
+            "SoulfireGainMultiplierPerCopy": 60000
+          }
+        },
+        {
+          "id": "BurdenSeal",
+          "name": "Burden",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/400",
+          "cumulativeDenominator": 400,
+          "baseCumulativeChanceAtLuck1": 0.0025,
+          "baseExclusiveDropChanceAtLuck1": 0.002416666666666667,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.00015,
+            "QiMultiplierPerCopy": 7.5e-05,
+            "KarmaGainMultiplierPerCopy": 7.5e-05
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 40000,
+            "QiMultiplierPerCopy": 40000,
+            "KarmaGainMultiplierPerCopy": 40000
+          }
+        },
+        {
+          "id": "MercySpark",
+          "name": "Mercy",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/12K",
+          "cumulativeDenominator": 12000,
+          "baseCumulativeChanceAtLuck1": 8.333333333333333e-05,
+          "baseExclusiveDropChanceAtLuck1": 7.933333333333333e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.00075,
+            "QiMultiplierPerCopy": 0.00158333333333333,
+            "KarmaGainMultiplierPerCopy": 0.000416666666666667,
+            "BeastRemnantGainMultiplierPerCopy": 8.33333333333333e-05
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 12000,
+            "QiMultiplierPerCopy": 12000,
+            "KarmaGainMultiplierPerCopy": 12000,
+            "BeastRemnantGainMultiplierPerCopy": 12000
+          }
+        },
+        {
+          "id": "BalanceScale",
+          "name": "Balance",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/250K",
+          "cumulativeDenominator": 250000,
+          "baseCumulativeChanceAtLuck1": 4e-06,
+          "baseExclusiveDropChanceAtLuck1": 3.983333333333333e-06,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.0116666666666667,
+            "QiMultiplierPerCopy": 0.0158333333333333,
+            "SoulfireGainMultiplierPerCopy": 0.00333333333333333,
+            "KarmaGainMultiplierPerCopy": 0.000833333333333333
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 1200,
+            "QiMultiplierPerCopy": 1200,
+            "SoulfireGainMultiplierPerCopy": 1200,
+            "KarmaGainMultiplierPerCopy": 1200
+          }
+        },
+        {
+          "id": "ReckoningEye",
+          "name": "Reckoning",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/60M",
+          "cumulativeDenominator": 60000000,
+          "baseCumulativeChanceAtLuck1": 1.6666666666666667e-08,
+          "baseExclusiveDropChanceAtLuck1": 1.6646666666666667e-08,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.06,
+            "QiMultiplierPerCopy": 0.185,
+            "EssenceGainMultiplierPerCopy": 0.075,
+            "KarmaGainMultiplierPerCopy": 0.005
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 200,
+            "QiMultiplierPerCopy": 200,
+            "EssenceGainMultiplierPerCopy": 200,
+            "KarmaGainMultiplierPerCopy": 200
+          }
+        },
+        {
+          "id": "SamsaraWheel",
+          "name": "Samsara",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/50B",
+          "cumulativeDenominator": 50000000000,
+          "baseCumulativeChanceAtLuck1": 2e-11,
+          "baseExclusiveDropChanceAtLuck1": 1.9499999999999997e-11,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 3.1,
+            "QiMultiplierPerCopy": 312.475,
+            "KarmaGainMultiplierPerCopy": 0.05,
+            "MarkBulkPerCopy": 0.5,
+            "MarkSpeedPerCopy": 0.25
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 40,
+            "QiMultiplierPerCopy": 40,
+            "KarmaGainMultiplierPerCopy": 40,
+            "MarkBulkPerCopy": 4,
+            "MarkSpeedPerCopy": 4
+          }
+        },
+        {
+          "id": "NirvanaThread",
+          "name": "Nirvana",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/2T",
+          "cumulativeDenominator": 2000000000000,
+          "baseCumulativeChanceAtLuck1": 5e-13,
+          "baseExclusiveDropChanceAtLuck1": 5e-13,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 20.7777777777778,
+            "QiMultiplierPerCopy": 694.388888888889,
+            "KarmaGainMultiplierPerCopy": 0.666666666666667,
+            "StarsMultiplierPerCopy": 0.111111111111111,
+            "MarkBulkPerCopy": 0.25
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 18,
+            "QiMultiplierPerCopy": 18,
+            "KarmaGainMultiplierPerCopy": 18,
+            "StarsMultiplierPerCopy": 18,
+            "MarkBulkPerCopy": 4
+          }
+        },
+        {
+          "id": "RevengeSigil",
+          "name": "Revenge",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/7.5e42",
+          "cumulativeDenominator": 7.5e+42,
+          "baseCumulativeChanceAtLuck1": 1.3333333333333332e-43,
+          "baseExclusiveDropChanceAtLuck1": 1.3333333333333332e-43,
+          "isSecret": false,
+          "isHidden": true,
+          "ignoreMarksBoost": true,
+          "showInBillboard": false,
+          "showInMarksGuiWhenUnowned": false,
+          "costPerBaseOpen": 50,
+          "costCurrency": "Karma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MarkCloneFlatAddPerCopy": 2,
+            "BeastRemnantGainMultiplierPerCopy": 1,
+            "DamageMultiplierPerCopy": 0.5
+          },
+          "effectCaps": {
+            "MarkCloneFlatAddPerCopy": 1,
+            "BeastRemnantGainMultiplierPerCopy": 1,
+            "DamageMultiplierPerCopy": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "Stars",
+      "markId": "MarkOfStars",
+      "displayName": "Mark of Stars",
+      "category": "Normal",
+      "currencyField": "Stars",
+      "costCurrencyName": "Stars",
+      "baseCostPerOpen": 2000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "StarSpark",
+          "name": "Spark",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.99996,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.00399,
+            "StarsMultiplierPerCopy": 4e-05
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 100000,
+            "StarsMultiplierPerCopy": 100000
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 400,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.11
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 5,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "StardustTrace",
+          "name": "Stardust",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/25K",
+          "cumulativeDenominator": 25000,
+          "baseCumulativeChanceAtLuck1": 4e-05,
+          "baseExclusiveDropChanceAtLuck1": 3.9997500000000005e-05,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 0.00532,
+            "StarsMultiplierPerCopy": 0.000146666666666667
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 75000,
+            "StarsMultiplierPerCopy": 75000
+          },
+          "effectCurves": {
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 400,
+              "hardCapCopies": 1000000000000000.0,
+              "curveExponent": 0.11
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 1000000000000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "AstralSign",
+          "name": "Astral",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/400M",
+          "cumulativeDenominator": 400000000,
+          "baseCumulativeChanceAtLuck1": 2.5e-09,
+          "baseExclusiveDropChanceAtLuck1": 2.48e-09,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.03996,
+            "QiMultiplierPerCopy": 0.03996,
+            "StarsMultiplierPerCopy": 0.0006,
+            "MarkBulkPerCopy": 4e-05
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 25000,
+            "QiMultiplierPerCopy": 25000,
+            "StarsMultiplierPerCopy": 25000,
+            "MarkBulkPerCopy": 25000
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 20000000000000.0,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 20000000000000.0,
+              "curveExponent": 0.11
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 16,
+              "hardCapCopies": 20000000000000.0,
+              "curveExponent": 0.11
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 20000000000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "CometBrand",
+          "name": "Comet",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/50B",
+          "cumulativeDenominator": 50000000000,
+          "baseCumulativeChanceAtLuck1": 2e-11,
+          "baseExclusiveDropChanceAtLuck1": 1.9974999999999998e-11,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.166583333333333,
+            "QiMultiplierPerCopy": 0.13325,
+            "StarsMultiplierPerCopy": 0.00158333333333333,
+            "MarkBulkPerCopy": 0.0005
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 12000,
+            "QiMultiplierPerCopy": 12000,
+            "StarsMultiplierPerCopy": 12000,
+            "MarkBulkPerCopy": 12000
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 100000000000.0,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 1600,
+              "hardCapCopies": 100000000000.0,
+              "curveExponent": 0.11
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 100000000000.0,
+              "curveExponent": 0.11
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 7,
+              "hardCapCopies": 100000000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "RadiantCore",
+          "name": "Radiant",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/40T",
+          "cumulativeDenominator": 40000000000000,
+          "baseCumulativeChanceAtLuck1": 2.5e-14,
+          "baseExclusiveDropChanceAtLuck1": 2.4714285714285714e-14,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.666333333333333,
+            "QiMultiplierPerCopy": 0.799666666666667,
+            "NebulaGainMultiplierPerCopy": 0.000333333333333333
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 3000,
+            "QiMultiplierPerCopy": 3000,
+            "NebulaGainMultiplierPerCopy": 3000
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 5000000000.0,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 2400,
+              "hardCapCopies": 5000000000.0,
+              "curveExponent": 0.11
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 5000000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "CelestialSigil",
+          "name": "Celestial",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/3.5Qa",
+          "cumulativeDenominator": 3500000000000000.0,
+          "baseCumulativeChanceAtLuck1": 2.857142857142857e-16,
+          "baseExclusiveDropChanceAtLuck1": 2.8371428571428574e-16,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 0.3196,
+            "QiMultiplierPerCopy": 0.3196,
+            "NebulaGainMultiplierPerCopy": 0.0002
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 2500,
+            "QiMultiplierPerCopy": 2500,
+            "NebulaGainMultiplierPerCopy": 2500
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 800,
+              "hardCapCopies": 50000000.0,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 800,
+              "hardCapCopies": 50000000.0,
+              "curveExponent": 0.11
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 1.5,
+              "hardCapCopies": 50000000.0,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "SupernovaCrown",
+          "name": "Supernova",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/500Qd",
+          "cumulativeDenominator": 5e+17,
+          "baseCumulativeChanceAtLuck1": 2e-18,
+          "baseExclusiveDropChanceAtLuck1": 1.96e-18,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 1.998,
+            "QiMultiplierPerCopy": 1.198,
+            "EssenceGainMultiplierPerCopy": 0.008,
+            "NebulaGainMultiplierPerCopy": 0.028,
+            "MarkSpeedPerCopy": 0.01
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 500,
+            "QiMultiplierPerCopy": 500,
+            "EssenceGainMultiplierPerCopy": 500,
+            "NebulaGainMultiplierPerCopy": 500,
+            "MarkSpeedPerCopy": 500
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 300000,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 600,
+              "hardCapCopies": 300000,
+              "curveExponent": 0.11
+            },
+            "EssenceGainMultiplierPerCopy": {
+              "maxMultiplier": 5,
+              "hardCapCopies": 300000,
+              "curveExponent": 0.11
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 15,
+              "hardCapCopies": 300000,
+              "curveExponent": 0.11
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 6,
+              "hardCapCopies": 300000,
+              "curveExponent": 0.11
+            }
+          }
+        },
+        {
+          "id": "GenesisEmpyrean",
+          "name": "Genesis",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/25Qn",
+          "cumulativeDenominator": 2.5e+19,
+          "baseCumulativeChanceAtLuck1": 4e-20,
+          "baseExclusiveDropChanceAtLuck1": 4e-20,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 2000,
+          "costCurrency": "Stars",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 7.996,
+            "QiMultiplierPerCopy": 7.996,
+            "NebulaGainMultiplierPerCopy": 0.02,
+            "MarkBulkPerCopy": 0.004
+          },
+          "effectCaps": {
+            "BreakthroughLuckPerCopy": 250,
+            "QiMultiplierPerCopy": 250,
+            "NebulaGainMultiplierPerCopy": 250,
+            "MarkBulkPerCopy": 250
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 10000,
+              "curveExponent": 0.11
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 10000,
+              "curveExponent": 0.11
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 6,
+              "hardCapCopies": 10000,
+              "curveExponent": 0.11
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 10000,
+              "curveExponent": 0.11
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Nebulae",
+      "markId": "MarkOfNebulae",
+      "displayName": "Mark of Nebulae",
+      "category": "Normal",
+      "currencyField": "Nebula",
+      "costCurrencyName": "Nebulae",
+      "baseCostPerOpen": 5000000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "Mistglow",
+          "name": "Mistglow",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9986666666666667,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "NebulaGainMultiplierPerCopy": 2.4e-19,
+            "BreakthroughLuckPerCopy": 1.3326666666666667e-16,
+            "KarmaGainMultiplierPerCopy": 1.9993333333333333e-16
+          },
+          "effectCurves": {
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 4.6,
+              "hardCapCopies": 1.5e+19,
+              "curveExponent": 0.25
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 1.5e+19,
+              "curveExponent": 0.25
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 1.5e+19,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Gasveil",
+          "name": "Gasveil",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/750",
+          "cumulativeDenominator": 750,
+          "baseCumulativeChanceAtLuck1": 0.0013333333333333333,
+          "baseExclusiveDropChanceAtLuck1": 0.0013304761904761905,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "NebulaGainMultiplierPerCopy": 4.4000000000000005e-18,
+            "BreakthroughLuckPerCopy": 3.999e-15,
+            "QiMultiplierPerCopy": 2.999e-15,
+            "MarkSpeedPerCopy": 4e-18
+          },
+          "effectCurves": {
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 5.4,
+              "hardCapCopies": 1e+18,
+              "curveExponent": 0.25
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 4000,
+              "hardCapCopies": 1e+18,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 1e+18,
+              "curveExponent": 0.25
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 5,
+              "hardCapCopies": 1e+18,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Starseed",
+          "name": "Starseed",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/350K",
+          "cumulativeDenominator": 350000,
+          "baseCumulativeChanceAtLuck1": 2.8571428571428573e-06,
+          "baseExclusiveDropChanceAtLuck1": 2.8570761904761904e-06,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 4.799e-14,
+            "StarsMultiplierPerCopy": 1.1e-16,
+            "NebulaGainMultiplierPerCopy": 5e-17,
+            "QiMultiplierPerCopy": 2.499e-14,
+            "MarkBulkPerCopy": 1e-17
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 4800,
+              "hardCapCopies": 1e+17,
+              "curveExponent": 0.25
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 1e+17,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 6,
+              "hardCapCopies": 1e+17,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 2500,
+              "hardCapCopies": 1e+17,
+              "curveExponent": 0.25
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 1e+17,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Moonwake",
+          "name": "Moonwake",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/15B",
+          "cumulativeDenominator": 15000000000.0,
+          "baseCumulativeChanceAtLuck1": 6.666666666666667e-11,
+          "baseExclusiveDropChanceAtLuck1": 6.662666666666667e-11,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 3.198e-13,
+            "QiMultiplierPerCopy": 3.198e-13,
+            "NebulaGainMultiplierPerCopy": 3.8e-15,
+            "StarsMultiplierPerCopy": 7.8e-15,
+            "KarmaGainMultiplierPerCopy": 2.998e-13,
+            "MarkSpeedPerCopy": 1e-15
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1600,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 1600,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 40,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 1500,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 6,
+              "hardCapCopies": 5000000000000000.0,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Cometheart",
+          "name": "Cometheart",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/25T",
+          "cumulativeDenominator": 25000000000000.0,
+          "baseCumulativeChanceAtLuck1": 4e-14,
+          "baseExclusiveDropChanceAtLuck1": 3.9e-14,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 3.998e-12,
+            "QiMultiplierPerCopy": 4.798e-12,
+            "NebulaGainMultiplierPerCopy": 7.8e-14,
+            "MarkBulkPerCopy": 1.4e-14
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 500000000000000.0,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 2400,
+              "hardCapCopies": 500000000000000.0,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 40,
+              "hardCapCopies": 500000000000000.0,
+              "curveExponent": 0.25
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 8,
+              "hardCapCopies": 500000000000000.0,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Voidpetal",
+          "name": "Voidpetal",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/1Qa",
+          "cumulativeDenominator": 1000000000000000.0,
+          "baseCumulativeChanceAtLuck1": 1e-15,
+          "baseExclusiveDropChanceAtLuck1": 9.999999933333334e-16,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 1.24875e-11,
+            "QiMultiplierPerCopy": 1.24875e-11,
+            "NebulaGainMultiplierPerCopy": 2.375e-13,
+            "StarsMultiplierPerCopy": 2.375e-13
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 80000000000000.0,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 80000000000000.0,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 80000000000000.0,
+              "curveExponent": 0.25
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 80000000000000.0,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "Novashard",
+          "name": "Novashard",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/150Sx",
+          "cumulativeDenominator": 1.5e+23,
+          "baseCumulativeChanceAtLuck1": 6.666666666666667e-24,
+          "baseExclusiveDropChanceAtLuck1": 6.566666666666667e-24,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 6.653333333333333e-10,
+            "QiMultiplierPerCopy": 3.986666666666667e-10,
+            "EssenceGainMultiplierPerCopy": 1.2e-11,
+            "KarmaGainMultiplierPerCopy": 1.32e-10,
+            "NebulaGainMultiplierPerCopy": 5.3333333333333335e-12,
+            "MarkSpeedPerCopy": 4e-12
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 500,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 300,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            },
+            "EssenceGainMultiplierPerCopy": {
+              "maxMultiplier": 10,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 100,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 5,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 4,
+              "hardCapCopies": 750000000000.0,
+              "curveExponent": 0.25
+            }
+          }
+        },
+        {
+          "id": "AstralCrown",
+          "name": "Astral Crown",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/10Sp",
+          "cumulativeDenominator": 1e+25,
+          "baseCumulativeChanceAtLuck1": 9.999999999999999e-26,
+          "baseExclusiveDropChanceAtLuck1": 9.999999999999999e-26,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 5000000,
+          "costCurrency": "Nebula",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BreakthroughLuckPerCopy": 9.99e-07,
+            "QiMultiplierPerCopy": 1.999e-06,
+            "KarmaGainMultiplierPerCopy": 2.99e-07,
+            "NebulaGainMultiplierPerCopy": 1.9e-08,
+            "MarkBulkPerCopy": 2e-09
+          },
+          "effectCurves": {
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1000,
+              "hardCapCopies": 1000000000.0,
+              "curveExponent": 0.25
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 1000000000.0,
+              "curveExponent": 0.25
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 300,
+              "hardCapCopies": 1000000000.0,
+              "curveExponent": 0.25
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 1000000000.0,
+              "curveExponent": 0.25
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 1000000000.0,
+              "curveExponent": 0.25
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Quasar",
+      "markId": "MarkOfQuasar",
+      "displayName": "Mark of Quasar",
+      "category": "Normal",
+      "currencyField": "Quasar",
+      "costCurrencyName": "Quasar",
+      "baseCostPerOpen": 1000000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "Flare",
+          "name": "Flare",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9998333333333334,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QuasarGainMultiplierPerCopy": 1.2916666666666668e-19,
+            "QiMultiplierPerCopy": 3.3329166666666666e-17
+          },
+          "effectCurves": {
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 300,
+              "hardCapCopies": 2e+19,
+              "curveExponent": 0.27
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 8000,
+              "hardCapCopies": 2.4e+20,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Vanta",
+          "name": "Vanta",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/6K",
+          "cumulativeDenominator": 6000,
+          "baseCumulativeChanceAtLuck1": 0.00016666666666666666,
+          "baseExclusiveDropChanceAtLuck1": 0.00016630952380952381,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "NebulaGainMultiplierPerCopy": 9.375e-19,
+            "BreakthroughLuckPerCopy": 4.999375e-16,
+            "KarmaGainMultiplierPerCopy": 2.499375e-16,
+            "QuasarGainMultiplierPerCopy": 6.875e-19
+          },
+          "effectCurves": {
+            "NebulaGainMultiplierPerCopy": {
+              "maxMultiplier": 16,
+              "hardCapCopies": 1.6e+19,
+              "curveExponent": 0.21
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 8000,
+              "hardCapCopies": 1.6e+19,
+              "curveExponent": 0.21
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 4000,
+              "hardCapCopies": 1.6e+19,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 132,
+              "hardCapCopies": 1.25e+18,
+              "curveExponent": 0.27
+            }
+          }
+        },
+        {
+          "id": "Sear",
+          "name": "Sear",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/2.8M",
+          "cumulativeDenominator": 2800000,
+          "baseCumulativeChanceAtLuck1": 3.5714285714285716e-07,
+          "baseExclusiveDropChanceAtLuck1": 3.571345238095238e-07,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 7.499375e-15,
+            "StarsMultiplierPerCopy": 2.9375e-17,
+            "QuasarGainMultiplierPerCopy": 4.375e-18,
+            "KarmaGainMultiplierPerCopy": 1.874375e-15,
+            "MarkBulkPerCopy": 1.25e-18
+          },
+          "effectCurves": {
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 12000,
+              "hardCapCopies": 1.6e+18,
+              "curveExponent": 0.21
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 48,
+              "hardCapCopies": 1.6e+18,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 112,
+              "hardCapCopies": 1.2e+17,
+              "curveExponent": 0.27
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 1.6e+18,
+              "curveExponent": 0.21
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 1.6e+18,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Halo",
+          "name": "Halo",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/120B",
+          "cumulativeDenominator": 120000000000.0,
+          "baseCumulativeChanceAtLuck1": 8.333333333333334e-12,
+          "baseExclusiveDropChanceAtLuck1": 8.328333333333334e-12,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "KarmaGainMultiplierPerCopy": 7.49875e-14,
+            "QuasarGainMultiplierPerCopy": 1.375e-16,
+            "MarkLuckPerCopy": 6.25e-18,
+            "QiMultiplierPerCopy": 3.74875e-14
+          },
+          "effectCurves": {
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 6000,
+              "hardCapCopies": 8e+16,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 132,
+              "hardCapCopies": 6000000000000000.0,
+              "curveExponent": 0.27
+            },
+            "MarkLuckPerCopy": {
+              "maxMultiplier": 1.5,
+              "hardCapCopies": 8e+16,
+              "curveExponent": 0.21
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 8e+16,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Lumen",
+          "name": "Lumen",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/200T",
+          "cumulativeDenominator": 200000000000000.0,
+          "baseCumulativeChanceAtLuck1": 5e-15,
+          "baseExclusiveDropChanceAtLuck1": 4.875e-15,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MarkBulkPerCopy": 1.375e-15,
+            "QiMultiplierPerCopy": 7.49875e-13,
+            "BreakthroughLuckPerCopy": 3.74875e-13,
+            "QuasarGainMultiplierPerCopy": 1.375e-15
+          },
+          "effectCurves": {
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 8000000000000000.0,
+              "curveExponent": 0.21
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 6000,
+              "hardCapCopies": 8000000000000000.0,
+              "curveExponent": 0.21
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 8000000000000000.0,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 148,
+              "hardCapCopies": 600000000000000.0,
+              "curveExponent": 0.27
+            }
+          }
+        },
+        {
+          "id": "Surge",
+          "name": "Surge",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/8Qa",
+          "cumulativeDenominator": 8000000000000000.0,
+          "baseCumulativeChanceAtLuck1": 1.25e-16,
+          "baseExclusiveDropChanceAtLuck1": 1.2499999916666668e-16,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 2.49921875e-12,
+            "QuasarGainMultiplierPerCopy": 1.796875e-14,
+            "BeastRemnantGainMultiplierPerCopy": 1.5625e-15
+          },
+          "effectCurves": {
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 3200,
+              "hardCapCopies": 1280000000000000.0,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 260,
+              "hardCapCopies": 90000000000000.0,
+              "curveExponent": 0.28
+            },
+            "BeastRemnantGainMultiplierPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 1280000000000000.0,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Corona",
+          "name": "Corona",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/1.2Oc",
+          "cumulativeDenominator": 1.2e+24,
+          "baseCumulativeChanceAtLuck1": 8.333333333333334e-25,
+          "baseExclusiveDropChanceAtLuck1": 8.333328333333334e-25,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "KarmaGainMultiplierPerCopy": 1.6658333333333333e-10,
+            "QuasarGainMultiplierPerCopy": 5.833333333333333e-13,
+            "QiMultiplierPerCopy": 2.4991666666666666e-10,
+            "BreakthroughLuckPerCopy": 2.4991666666666666e-10
+          },
+          "effectCurves": {
+            "KarmaGainMultiplierPerCopy": {
+              "maxMultiplier": 2000,
+              "hardCapCopies": 12000000000000.0,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 120,
+              "hardCapCopies": 1100000000000.0,
+              "curveExponent": 0.28
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 12000000000000.0,
+              "curveExponent": 0.21
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 3000,
+              "hardCapCopies": 12000000000000.0,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Zenith",
+          "name": "Zenith",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/2No",
+          "cumulativeDenominator": 2e+30,
+          "baseCumulativeChanceAtLuck1": 4.9999999999999995e-31,
+          "baseExclusiveDropChanceAtLuck1": 4.9999999999999995e-31,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MarkLuckPerCopy": 1.875e-10,
+            "QuasarGainMultiplierPerCopy": 1.1875e-09,
+            "MarkBulkPerCopy": 1.25e-10,
+            "QiMultiplierPerCopy": 4.999375e-07,
+            "MiasmaGainMultiplierPerCopy": 1.875e-10
+          },
+          "effectCurves": {
+            "MarkLuckPerCopy": {
+              "maxMultiplier": 4,
+              "hardCapCopies": 16000000000.0,
+              "curveExponent": 0.21
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 240,
+              "hardCapCopies": 1400000000.0,
+              "curveExponent": 0.29
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 16000000000.0,
+              "curveExponent": 0.21
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 8000,
+              "hardCapCopies": 16000000000.0,
+              "curveExponent": 0.21
+            },
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 4,
+              "hardCapCopies": 16000000000.0,
+              "curveExponent": 0.21
+            }
+          }
+        },
+        {
+          "id": "Apotheosis",
+          "name": "Apotheosis",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/400Qid",
+          "cumulativeDenominator": 4e+50,
+          "baseCumulativeChanceAtLuck1": 2.4999999999999997e-51,
+          "baseExclusiveDropChanceAtLuck1": 2.4999999999999997e-51,
+          "isSecret": false,
+          "isHidden": true,
+          "ignoreMarksBoost": true,
+          "showInBillboard": false,
+          "showInMarksGuiWhenUnowned": false,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Quasar",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "AshGainMultiplierPerCopy": 0.0058,
+            "MiasmaGainMultiplierPerCopy": 0.0038,
+            "QiMultiplierPerCopy": 359.9998,
+            "BreakthroughLuckPerCopy": 359.9998,
+            "ManualLuckPerCopy": 0.0002,
+            "MarkBulkPerCopy": 0.001
+          },
+          "effectCaps": {
+            "AshGainMultiplierPerCopy": 5000,
+            "MiasmaGainMultiplierPerCopy": 5000,
+            "QiMultiplierPerCopy": 5000,
+            "BreakthroughLuckPerCopy": 5000,
+            "ManualLuckPerCopy": 5000,
+            "MarkBulkPerCopy": 5000
+          }
+        }
+      ]
+    },
+    {
+      "id": "Miasma",
+      "markId": "MarkOfMiasma",
+      "displayName": "Mark of Miasma",
+      "category": "Normal",
+      "currencyField": "Miasma",
+      "costCurrencyName": "Miasma",
+      "baseCostPerOpen": 1000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": null,
+      "rollables": [
+        {
+          "id": "Spore",
+          "name": "Spore",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9999999995,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 0.00124,
+            "MarkSpeedPerCopy": 0.00068,
+            "QuasarGainMultiplierPerCopy": 0.0022
+          },
+          "effectCaps": {
+            "MiasmaGainMultiplierPerCopy": 25000,
+            "MarkSpeedPerCopy": 25000,
+            "QuasarGainMultiplierPerCopy": 25000
+          }
+        },
+        {
+          "id": "BlightSeed",
+          "name": "Seed",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/2B",
+          "cumulativeDenominator": 2000000000,
+          "baseCumulativeChanceAtLuck1": 5e-10,
+          "baseExclusiveDropChanceAtLuck1": 4.98888888888889e-10,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 9.4e-06,
+            "BreakthroughLuckPerCopy": 0.0015998,
+            "MarkBulkPerCopy": 1.4e-06
+          },
+          "effectCaps": {
+            "MiasmaGainMultiplierPerCopy": 5000000,
+            "BreakthroughLuckPerCopy": 5000000,
+            "MarkBulkPerCopy": 5000000
+          }
+        },
+        {
+          "id": "Rotbrand",
+          "name": "Rotbrand",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/900B",
+          "cumulativeDenominator": 900000000000,
+          "baseCumulativeChanceAtLuck1": 1.1111111111111112e-12,
+          "baseExclusiveDropChanceAtLuck1": 1.1110277777777778e-12,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 8.5e-09,
+            "QiMultiplierPerCopy": 1.27999e-05,
+            "StarsMultiplierPerCopy": 5.11e-08,
+            "ManualLuckPerCopy": 1e-10
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 86,
+              "hardCapCopies": 100000000000,
+              "curveExponent": 0.22
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 128000,
+              "hardCapCopies": 100000000000,
+              "curveExponent": 0.22
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 512,
+              "hardCapCopies": 100000000000,
+              "curveExponent": 0.22
+            },
+            "ManualLuckPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 100000000000,
+              "curveExponent": 0.22
+            }
+          }
+        },
+        {
+          "id": "PestilentVein",
+          "name": "Vein",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/12Qa",
+          "cumulativeDenominator": 1.2e+16,
+          "baseCumulativeChanceAtLuck1": 8.333333333333333e-17,
+          "baseExclusiveDropChanceAtLuck1": 8.326666666666666e-17,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 2.86e-14,
+            "BreakthroughLuckPerCopy": 5.11998e-11,
+            "DamageMultiplierPerCopy": 2e-16
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 144,
+              "hardCapCopies": 5e+16,
+              "curveExponent": 0.2
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 256000,
+              "hardCapCopies": 5e+16,
+              "curveExponent": 0.2
+            },
+            "DamageMultiplierPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 5e+16,
+              "curveExponent": 0.2
+            }
+          }
+        },
+        {
+          "id": "DreadBloom",
+          "name": "Bloom",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/15Qn",
+          "cumulativeDenominator": 1.5e+19,
+          "baseCumulativeChanceAtLuck1": 6.666666666666666e-20,
+          "baseExclusiveDropChanceAtLuck1": 6.666566666666666e-20,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 1.1e-16,
+            "QiMultiplierPerCopy": 6.71998e-13,
+            "BeastRemnantGainMultiplierPerCopy": 2.2e-17,
+            "StarsMultiplierPerCopy": 2.54e-16,
+            "MarkLuckPerCopy": 2e-18
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 56,
+              "hardCapCopies": 5e+18,
+              "curveExponent": 0.19
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 336000,
+              "hardCapCopies": 5e+18,
+              "curveExponent": 0.19
+            },
+            "BeastRemnantGainMultiplierPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 5e+18,
+              "curveExponent": 0.19
+            },
+            "StarsMultiplierPerCopy": {
+              "maxMultiplier": 128,
+              "hardCapCopies": 5e+18,
+              "curveExponent": 0.19
+            },
+            "MarkLuckPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 5e+18,
+              "curveExponent": 0.19
+            }
+          }
+        },
+        {
+          "id": "Wormmoon",
+          "name": "Wormmoon",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/1Sp",
+          "cumulativeDenominator": 1e+24,
+          "baseCumulativeChanceAtLuck1": 1.0000000000000001e-24,
+          "baseExclusiveDropChanceAtLuck1": 9.999999987500002e-25,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 3.55e-20,
+            "QiMultiplierPerCopy": 2.3999995e-15,
+            "BreakthroughLuckPerCopy": 2.3999995e-15
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 72,
+              "hardCapCopies": 2e+21,
+              "curveExponent": 0.18
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 4800000,
+              "hardCapCopies": 2e+21,
+              "curveExponent": 0.18
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 4800000,
+              "hardCapCopies": 2e+21,
+              "curveExponent": 0.18
+            }
+          }
+        },
+        {
+          "id": "TombMire",
+          "name": "Tombmire",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/800No",
+          "cumulativeDenominator": 8e+32,
+          "baseCumulativeChanceAtLuck1": 1.2499999999999999e-33,
+          "baseExclusiveDropChanceAtLuck1": 1.2499997999999999e-33,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 9.5e-26,
+            "BreakthroughLuckPerCopy": 7.999995e-21,
+            "QiMultiplierPerCopy": 5.999995e-21,
+            "MarkSpeedPerCopy": 1e-26,
+            "MarkBulkPerCopy": 5e-27
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 20,
+              "hardCapCopies": 2e+26,
+              "curveExponent": 0.17
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 1600000,
+              "hardCapCopies": 2e+26,
+              "curveExponent": 0.17
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 1200000,
+              "hardCapCopies": 2e+26,
+              "curveExponent": 0.17
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 2e+26,
+              "curveExponent": 0.17
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 2e+26,
+              "curveExponent": 0.17
+            }
+          }
+        },
+        {
+          "id": "AbyssPlague",
+          "name": "Abyssplague",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/5Ud",
+          "cumulativeDenominator": 5e+39,
+          "baseCumulativeChanceAtLuck1": 2e-40,
+          "baseExclusiveDropChanceAtLuck1": 2e-40,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000,
+          "costCurrency": "Miasma",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 6.2e-28,
+            "QiMultiplierPerCopy": 2.3999998e-22,
+            "BreakthroughLuckPerCopy": 2.3999998e-22,
+            "ManualLuckPerCopy": 2e-29
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 32,
+              "hardCapCopies": 5e+31,
+              "curveExponent": 0.16
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 12000000,
+              "hardCapCopies": 5e+31,
+              "curveExponent": 0.16
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 12000000,
+              "hardCapCopies": 5e+31,
+              "curveExponent": 0.16
+            },
+            "ManualLuckPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 5e+31,
+              "curveExponent": 0.16
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Ash",
+      "markId": "MarkOfAsh",
+      "displayName": "Mark of Ash",
+      "category": "Normal",
+      "currencyField": "Ash",
+      "costCurrencyName": "Ash",
+      "baseCostPerOpen": 1000000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": "#8E8794",
+      "rollables": [
+        {
+          "id": "Cinder",
+          "name": "Cinder",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.9999999995,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "AshGainMultiplierPerCopy": 0.00011
+          },
+          "effectCaps": {
+            "AshGainMultiplierPerCopy": 100000
+          }
+        },
+        {
+          "id": "Smolder",
+          "name": "Smolder",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/2B",
+          "cumulativeDenominator": 2000000000,
+          "baseCumulativeChanceAtLuck1": 5e-10,
+          "baseExclusiveDropChanceAtLuck1": 4.98888888888889e-10,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 7.5e-07,
+            "AshGainMultiplierPerCopy": 7.5e-07,
+            "QuasarGainMultiplierPerCopy": 4.995e-05
+          },
+          "effectCaps": {
+            "MiasmaGainMultiplierPerCopy": 20000000,
+            "AshGainMultiplierPerCopy": 20000000,
+            "QuasarGainMultiplierPerCopy": 20000000
+          }
+        },
+        {
+          "id": "Soot",
+          "name": "Soot",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/900B",
+          "cumulativeDenominator": 900000000000,
+          "baseCumulativeChanceAtLuck1": 1.1111111111111112e-12,
+          "baseExclusiveDropChanceAtLuck1": 1.1110277777777778e-12,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "AshGainMultiplierPerCopy": 1.175e-10,
+            "DamageMultiplierPerCopy": 2.5e-12
+          },
+          "effectCurves": {
+            "AshGainMultiplierPerCopy": {
+              "maxMultiplier": 48,
+              "hardCapCopies": 400000000000.0,
+              "curveExponent": 0.22
+            },
+            "DamageMultiplierPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 400000000000.0,
+              "curveExponent": 0.22
+            }
+          }
+        },
+        {
+          "id": "Ember",
+          "name": "Ember",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/12Qa",
+          "cumulativeDenominator": 1.2e+16,
+          "baseCumulativeChanceAtLuck1": 8.333333333333333e-17,
+          "baseExclusiveDropChanceAtLuck1": 8.326666666666666e-17,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "BeastRemnantGainMultiplierPerCopy": 1.15e-16,
+            "MarkBulkPerCopy": 1e-17,
+            "MarkSpeedPerCopy": 1e-17
+          },
+          "effectCurves": {
+            "BeastRemnantGainMultiplierPerCopy": {
+              "maxMultiplier": 24,
+              "hardCapCopies": 2e+17,
+              "curveExponent": 0.2
+            },
+            "MarkBulkPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 2e+17,
+              "curveExponent": 0.2
+            },
+            "MarkSpeedPerCopy": {
+              "maxMultiplier": 3,
+              "hardCapCopies": 2e+17,
+              "curveExponent": 0.2
+            }
+          }
+        },
+        {
+          "id": "Pyre",
+          "name": "Pyre",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/15Qn",
+          "cumulativeDenominator": 1.5e+19,
+          "baseCumulativeChanceAtLuck1": 6.666666666666666e-20,
+          "baseExclusiveDropChanceAtLuck1": 6.666566666666666e-20,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "AshGainMultiplierPerCopy": 6.35e-18,
+            "BreakthroughLuckPerCopy": 4.7999995e-13,
+            "QiMultiplierPerCopy": 4.7999995e-13
+          },
+          "effectCurves": {
+            "AshGainMultiplierPerCopy": {
+              "maxMultiplier": 128,
+              "hardCapCopies": 2e+19,
+              "curveExponent": 0.19
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 9600000,
+              "hardCapCopies": 2e+19,
+              "curveExponent": 0.19
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 9600000,
+              "hardCapCopies": 2e+19,
+              "curveExponent": 0.19
+            }
+          }
+        },
+        {
+          "id": "Ashveil",
+          "name": "Ashveil",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/1Sp",
+          "cumulativeDenominator": 1e+24,
+          "baseCumulativeChanceAtLuck1": 1.0000000000000001e-24,
+          "baseExclusiveDropChanceAtLuck1": 9.999999987500002e-25,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MiasmaGainMultiplierPerCopy": 3.1875e-20,
+            "AshGainMultiplierPerCopy": 1.1875e-20,
+            "QuasarGainMultiplierPerCopy": 3.1875e-20
+          },
+          "effectCurves": {
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 256,
+              "hardCapCopies": 8e+21,
+              "curveExponent": 0.18
+            },
+            "AshGainMultiplierPerCopy": {
+              "maxMultiplier": 96,
+              "hardCapCopies": 8e+21,
+              "curveExponent": 0.18
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "maxMultiplier": 256,
+              "hardCapCopies": 8e+21,
+              "curveExponent": 0.18
+            }
+          }
+        },
+        {
+          "id": "Charfall",
+          "name": "Charfall",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/800No",
+          "cumulativeDenominator": 8e+32,
+          "baseCumulativeChanceAtLuck1": 1.2499999999999999e-33,
+          "baseExclusiveDropChanceAtLuck1": 1.2499997999999999e-33,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "DamageMultiplierPerCopy": 7.5e-27,
+            "BeastCoreChanceMultiplierPerCopy": 1.2499999999999999e-27,
+            "BeastRemnantGainMultiplierPerCopy": 1.3749999999999998e-26
+          },
+          "effectCurves": {
+            "DamageMultiplierPerCopy": {
+              "maxMultiplier": 7,
+              "hardCapCopies": 8e+26,
+              "curveExponent": 0.17
+            },
+            "BeastCoreChanceMultiplierPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 8e+26,
+              "curveExponent": 0.17
+            },
+            "BeastRemnantGainMultiplierPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 8e+26,
+              "curveExponent": 0.17
+            }
+          }
+        },
+        {
+          "id": "Hollowflame",
+          "name": "Hollowflame",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/5Ud",
+          "cumulativeDenominator": 5e+39,
+          "baseCumulativeChanceAtLuck1": 2e-40,
+          "baseExclusiveDropChanceAtLuck1": 2e-40,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "AshGainMultiplierPerCopy": 1.275e-30,
+            "MiasmaGainMultiplierPerCopy": 4.7499999999999995e-31,
+            "BreakthroughLuckPerCopy": 6.39999995e-25,
+            "QiMultiplierPerCopy": 6.39999995e-25
+          },
+          "effectCurves": {
+            "AshGainMultiplierPerCopy": {
+              "maxMultiplier": 256,
+              "hardCapCopies": 2e+32,
+              "curveExponent": 0.16
+            },
+            "MiasmaGainMultiplierPerCopy": {
+              "maxMultiplier": 96,
+              "hardCapCopies": 2e+32,
+              "curveExponent": 0.16
+            },
+            "BreakthroughLuckPerCopy": {
+              "maxMultiplier": 128000000,
+              "hardCapCopies": 2e+32,
+              "curveExponent": 0.16
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 128000000,
+              "hardCapCopies": 2e+32,
+              "curveExponent": 0.16
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "Laws",
+      "markId": "MarkOfLaws",
+      "displayName": "Mark of Laws",
+      "category": "Normal",
+      "currencyField": "Laws",
+      "costCurrencyName": "Laws",
+      "baseCostPerOpen": 1000000000,
+      "baseOpenIntervalSeconds": 0.5,
+      "rollMode": "CumulativeDenominator",
+      "buttonAccentHex": "#8FD3FF",
+      "rollables": [
+        {
+          "id": "Edict",
+          "name": "Edict",
+          "tier": 1,
+          "gradientId": "1",
+          "rarityText": "1/1",
+          "cumulativeDenominator": 1,
+          "baseCumulativeChanceAtLuck1": 1.0,
+          "baseExclusiveDropChanceAtLuck1": 0.99999999999,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "LawsGainMultiplierPerCopy": 7e-59,
+            "MarkSpeedPerCopy": 1e-59
+          },
+          "effectCaps": {
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 1,
+              "exponent": 59
+            },
+            "MarkSpeedPerCopy": {
+              "mantissa": 1,
+              "exponent": 59
+            }
+          }
+        },
+        {
+          "id": "Clause",
+          "name": "Clause",
+          "tier": 2,
+          "gradientId": "2",
+          "rarityText": "1/100B",
+          "cumulativeDenominator": 100000000000.0,
+          "baseCumulativeChanceAtLuck1": 1e-11,
+          "baseExclusiveDropChanceAtLuck1": 9.99e-12,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "LawsGainMultiplierPerCopy": 1.1e-52,
+            "MarkSpeedPerCopy": 4e-53
+          },
+          "effectCaps": {
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 1,
+              "exponent": 53
+            },
+            "MarkSpeedPerCopy": {
+              "mantissa": 1,
+              "exponent": 53
+            }
+          }
+        },
+        {
+          "id": "Verdict",
+          "name": "Verdict",
+          "tier": 3,
+          "gradientId": "3",
+          "rarityText": "1/100T",
+          "cumulativeDenominator": 100000000000000.0,
+          "baseCumulativeChanceAtLuck1": 1e-14,
+          "baseExclusiveDropChanceAtLuck1": 9.9998e-15,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 8.533333316666666e-42,
+            "LawsGainMultiplierPerCopy": 1.833333333333333e-49,
+            "InsightGainMultiplierPerCopy": 1.6666666649999998e-41,
+            "EssenceGainMultiplierPerCopy": 1.6666666649999998e-41
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": {
+              "mantissa": 6,
+              "exponent": 49
+            },
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 6,
+              "exponent": 49
+            },
+            "InsightGainMultiplierPerCopy": {
+              "mantissa": 6,
+              "exponent": 49
+            },
+            "EssenceGainMultiplierPerCopy": {
+              "mantissa": 6,
+              "exponent": 49
+            }
+          }
+        },
+        {
+          "id": "Tribunal",
+          "name": "Tribunal",
+          "tier": 4,
+          "gradientId": "4",
+          "rarityText": "1/5Qi",
+          "cumulativeDenominator": 5e+18,
+          "baseCumulativeChanceAtLuck1": 2e-19,
+          "baseExclusiveDropChanceAtLuck1": 1.9995e-19,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "ManualLuckPerCopy": 3.3333333333333333e-46,
+            "LawsGainMultiplierPerCopy": 2.333333333333333e-45,
+            "MarkLuckPerCopy": 5e-46,
+            "MarkSpeedPerCopy": 6.6666666666666666e-46
+          },
+          "effectCaps": {
+            "ManualLuckPerCopy": {
+              "mantissa": 3,
+              "exponent": 45
+            },
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 45
+            },
+            "MarkLuckPerCopy": {
+              "mantissa": 3,
+              "exponent": 45
+            },
+            "MarkSpeedPerCopy": {
+              "mantissa": 3,
+              "exponent": 45
+            }
+          }
+        },
+        {
+          "id": "Mandate",
+          "name": "Mandate",
+          "tier": 5,
+          "gradientId": "5",
+          "rarityText": "1/20Sx",
+          "cumulativeDenominator": 2e+22,
+          "baseCumulativeChanceAtLuck1": 5e-23,
+          "baseExclusiveDropChanceAtLuck1": 4.9999800000000003e-23,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "LawsGainMultiplierPerCopy": 4.9999999999999994e-42,
+            "SoulfireGainMultiplierPerCopy": 3.33333333e-34,
+            "KarmaGainMultiplierPerCopy": 3.33333333e-34
+          },
+          "effectCaps": {
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 42
+            },
+            "SoulfireGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 42
+            },
+            "KarmaGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 42
+            }
+          }
+        },
+        {
+          "id": "Decree",
+          "name": "Decree",
+          "tier": 6,
+          "gradientId": "6",
+          "rarityText": "1/5Oc",
+          "cumulativeDenominator": 5e+27,
+          "baseCumulativeChanceAtLuck1": 2.0000000000000002e-28,
+          "baseExclusiveDropChanceAtLuck1": 1.9999999900000003e-28,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "MarkSpeedPerCopy": 1.0333333333333333e-36,
+            "MarkBulkPerCopy": 9.999999999999999e-38,
+            "LawsGainMultiplierPerCopy": 2.3333333333333333e-37,
+            "StarsMultiplierPerCopy": 3.33333333e-29,
+            "NebulaGainMultiplierPerCopy": 3.33333333e-29
+          },
+          "effectCaps": {
+            "MarkSpeedPerCopy": {
+              "mantissa": 3,
+              "exponent": 37
+            },
+            "MarkBulkPerCopy": {
+              "mantissa": 3,
+              "exponent": 37
+            },
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 37
+            },
+            "StarsMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 37
+            },
+            "NebulaGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 37
+            }
+          }
+        },
+        {
+          "id": "Statute",
+          "name": "Statute",
+          "tier": 7,
+          "gradientId": "7",
+          "rarityText": "1/1Ud",
+          "cumulativeDenominator": 1e+36,
+          "baseCumulativeChanceAtLuck1": 1e-36,
+          "baseExclusiveDropChanceAtLuck1": 9.9999999e-37,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "LawsGainMultiplierPerCopy": 7.666666666666668e-30,
+            "QiMultiplierPerCopy": 1.6666666663333335e-21,
+            "BreakthroughLuckPerCopy": 1.3333330000000001e-24
+          },
+          "effectCaps": {
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 30
+            },
+            "QiMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 30
+            },
+            "BreakthroughLuckPerCopy": {
+              "mantissa": 3,
+              "exponent": 30
+            }
+          }
+        },
+        {
+          "id": "Absolute",
+          "name": "Absolute",
+          "tier": 8,
+          "gradientId": "8",
+          "rarityText": "1/100Td",
+          "cumulativeDenominator": 1e+44,
+          "baseCumulativeChanceAtLuck1": 1e-44,
+          "baseExclusiveDropChanceAtLuck1": 1e-44,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "LawsGainMultiplierPerCopy": 1.1666666666666668e-26,
+            "MarkLuckPerCopy": 3.3333333333333338e-28,
+            "MarkSpeedPerCopy": 2.3333333333333335e-27,
+            "MarkBulkPerCopy": 2.3333333333333335e-27,
+            "QuasarGainMultiplierPerCopy": 3.3333333300000003e-19
+          },
+          "effectCaps": {
+            "LawsGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 27
+            },
+            "MarkLuckPerCopy": {
+              "mantissa": 3,
+              "exponent": 27
+            },
+            "MarkSpeedPerCopy": {
+              "mantissa": 3,
+              "exponent": 27
+            },
+            "MarkBulkPerCopy": {
+              "mantissa": 3,
+              "exponent": 27
+            },
+            "QuasarGainMultiplierPerCopy": {
+              "mantissa": 3,
+              "exponent": 27
+            }
+          }
+        },
+        {
+          "id": "Judge",
+          "name": "Judge",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/1.42Spvg",
+          "cumulativeDenominator": 1.418e+84,
+          "baseCumulativeChanceAtLuck1": 7.052186177715093e-85,
+          "baseExclusiveDropChanceAtLuck1": 7.052186177715093e-85,
+          "isSecret": true,
+          "isHidden": true,
+          "ignoreMarksBoost": true,
+          "showInBillboard": false,
+          "showInMarksGuiWhenUnowned": false,
+          "costPerBaseOpen": 1000000000,
+          "costCurrency": "Laws",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "QiMultiplierPerCopy": 1e+64,
+            "DiscipleBreakthroughLuckPerCopy": 0.0008
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 5000,
+            "DiscipleBreakthroughLuckPerCopy": 5000
+          }
+        }
+      ]
+    }
+  ],
+  "globalMarks": {
+    "markId": "MarkOfUnity",
+    "displayName": "Marks of Unity",
+    "category": "Global",
+    "rollMode": "Weighted",
+    "products": [
+      {
+        "productId": 3537389798,
+        "buttonName": "1xMark",
+        "markId": "MarkOfUnity",
+        "rolls": 1
+      },
+      {
+        "productId": 3537390141,
+        "buttonName": "10xMark",
+        "markId": "MarkOfUnity",
+        "rolls": 10
+      },
+      {
+        "productId": 3537390338,
+        "buttonName": "100xMark",
+        "markId": "MarkOfUnity",
+        "rolls": 100
+      },
+      {
+        "productId": 3537390698,
+        "buttonName": "1000xMark",
+        "markId": "MarkOfUnity",
+        "rolls": 1000
+      },
+      {
+        "productId": 3537391053,
+        "buttonName": "10000xMark",
+        "markId": "MarkOfUnity",
+        "rolls": 10000
+      }
+    ],
+    "rollables": [
+      {
+        "id": "Stranger",
+        "name": "Stranger",
+        "tier": 1,
+        "weight": 89,
+        "baseDropChance": 0.89,
+        "effects": {
+          "QiMultiplierPerCopy": 0.00198,
+          "BreakthroughLuckPerCopy": 0.00198
+        },
+        "effectCaps": {
+          "QiMultiplierPerCopy": 50000,
+          "BreakthroughLuckPerCopy": 50000
+        }
+      },
+      {
+        "id": "Acquaintance",
+        "name": "Acquaintance",
+        "tier": 2,
+        "weight": 10,
+        "baseDropChance": 0.1,
+        "effects": {
+          "InsightGainMultiplierPerCopy": 0.0014,
+          "EssenceGainMultiplierPerCopy": 0.000828571428571429,
+          "QiMultiplierPerCopy": 0.000542857142857143
+        },
+        "effectCaps": {
+          "InsightGainMultiplierPerCopy": 35000,
+          "EssenceGainMultiplierPerCopy": 35000,
+          "QiMultiplierPerCopy": 35000
+        }
+      },
+      {
+        "id": "Friend",
+        "name": "Friend",
+        "tier": 3,
+        "weight": 0.89,
+        "baseDropChance": 0.0089,
+        "effects": {
+          "SoulfireGainMultiplierPerCopy": 0.0149,
+          "EssenceGainMultiplierPerCopy": 0.0099,
+          "MarkBulkPerCopy": 0.4,
+          "MarkLuckPerCopy": 0.4
+        },
+        "effectCaps": {
+          "SoulfireGainMultiplierPerCopy": 10000,
+          "EssenceGainMultiplierPerCopy": 10000,
+          "MarkBulkPerCopy": 10,
+          "MarkLuckPerCopy": 5
+        }
+      },
+      {
+        "id": "Champion",
+        "name": "Champion",
+        "tier": 4,
+        "weight": 0.1,
+        "baseDropChance": 0.001,
+        "effects": {
+          "QiMultiplierPerCopy": 0.199,
+          "KarmaGainMultiplierPerCopy": 0.199,
+          "BeastCoreChanceMultiplierPerCopy": 0.02,
+          "MarkLuckPerCopy": 0.2
+        },
+        "effectCaps": {
+          "QiMultiplierPerCopy": 1000,
+          "KarmaGainMultiplierPerCopy": 1000,
+          "BeastCoreChanceMultiplierPerCopy": 50,
+          "MarkLuckPerCopy": 20
+        }
+      },
+      {
+        "id": "Legend",
+        "name": "Legend",
+        "tier": 5,
+        "weight": 0.01,
+        "baseDropChance": 0.0001,
+        "effects": {
+          "BreakthroughLuckPerCopy": 49.9,
+          "QiMultiplierPerCopy": 49.9,
+          "BeastRemnantGainMultiplierPerCopy": 0.9,
+          "MarkSpeedPerCopy": 0.2,
+          "MarkBulkPerCopy": 0.2
+        },
+        "effectCaps": {
+          "BreakthroughLuckPerCopy": 10,
+          "QiMultiplierPerCopy": 10,
+          "BeastRemnantGainMultiplierPerCopy": 10,
+          "MarkSpeedPerCopy": 10,
+          "MarkBulkPerCopy": 10
+        },
+        "markCloneThresholds": [
+          1,
+          5,
+          10
+        ]
+      }
+    ]
+  }
+}
