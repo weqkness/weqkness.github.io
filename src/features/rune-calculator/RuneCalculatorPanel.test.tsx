@@ -141,6 +141,9 @@ describe('RuneCalculatorPanel', () => {
     const user = userEvent.setup();
     render(<RuneCalculatorPanel marksData={testMarksData} scales={testScales} />);
 
+    expect(screen.getAllByText(/Breakthrough Luck/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/BreakthroughLuckPerCopy/)).not.toBeInTheDocument();
+
     await user.selectOptions(screen.getByLabelText('Effect'), 'BreakthroughLuckPerCopy');
 
     expect(screen.getByText('Dim')).toBeInTheDocument();

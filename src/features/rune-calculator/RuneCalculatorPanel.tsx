@@ -101,6 +101,27 @@ function uniqueEffectTypes(data: MarksData): string[] {
   return [...effects].sort();
 }
 
+function formatEffectName(effect: string): string {
+  const aliases: Record<string, string> = {
+    MarkBulkPerCopy: 'Mark Bulk',
+    MarkCloneFlatAddPerCopy: 'Mark Clone',
+    MarkLuckPerCopy: 'Mark Luck',
+    MarkSpeedPerCopy: 'Mark Speed'
+  };
+
+  if (aliases[effect]) {
+    return aliases[effect];
+  }
+
+  return effect
+    .replace(/FlatAddPerCopy$/, '')
+    .replace(/PerCopy$/, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/\bMultiplier\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function allTiers(data: MarksData): number[] {
   const tiers = new Set<number>();
   for (const category of data.categories) {
@@ -284,7 +305,7 @@ export default function RuneCalculatorPanel({
             <Field label="Effect">
               <select value={effectType} onChange={event => setEffectType(event.target.value)} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
                 <option value="all">All effects</option>
-                {effectTypes.map(effect => <option key={effect} value={effect}>{effect}</option>)}
+                {effectTypes.map(effect => <option key={effect} value={effect}>{formatEffectName(effect)}</option>)}
               </select>
             </Field>
 
@@ -452,7 +473,7 @@ function MarkRow({
             <div className="flex flex-wrap gap-2">
               {effectEntries.map(([effect, perCopy]) => (
                 <span key={effect} className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                  <span className="font-medium">{effect}</span>: {formatScaled(perCopy, scaleUtils)}
+                  <span className="font-medium">{formatEffectName(effect)}</span>: {formatScaled(perCopy, scaleUtils)}
                   <span className="text-slate-500 dark:text-slate-400"> cap {formatNumericValue(mark.effectCaps?.[effect], scaleUtils)}</span>
                   {mark.effectCurves?.[effect] && <span className="text-cyan-700 dark:text-cyan-300"> curve</span>}
                 </span>
