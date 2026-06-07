@@ -7,12 +7,80 @@ export interface ParseResult {
 
 export interface ScaleUtils {
   scaleEntries: Array<[string, number]>;
+  formatEntries: Array<[string, number]>;
   lowerCaseScaleMap: Record<string, string[]>;
   conflictingLowerCaseSuffixes: Set<string>;
 }
 
+const GAME_SCALE_SUFFIXES: Array<[string, number]> = [
+  ['', 1],
+  ['K', 1e3],
+  ['M', 1e6],
+  ['B', 1e9],
+  ['T', 1e12],
+  ['Qd', 1e15],
+  ['Qn', 1e18],
+  ['Sx', 1e21],
+  ['Sp', 1e24],
+  ['Oc', 1e27],
+  ['No', 1e30],
+  ['Dc', 1e33],
+  ['Ud', 1e36],
+  ['Dd', 1e39],
+  ['Td', 1e42],
+  ['Qad', 1e45],
+  ['Qid', 1e48],
+  ['Sxd', 1e51],
+  ['Spd', 1e54],
+  ['Ocd', 1e57],
+  ['Nod', 1e60],
+  ['Vg', 1e63],
+  ['Uvg', 1e66],
+  ['Dvg', 1e69],
+  ['Tvg', 1e72],
+  ['Qavg', 1e75],
+  ['Qivg', 1e78],
+  ['Sxvg', 1e81],
+  ['Spvg', 1e84],
+  ['Ocvg', 1e87],
+  ['Novg', 1e90],
+  ['Tg', 1e93],
+  ['Utg', 1e96],
+  ['Dtg', 1e99],
+  ['Ttg', 1e102],
+  ['Qatg', 1e105],
+  ['Qitg', 1e108],
+  ['Sxtg', 1e111],
+  ['Sptg', 1e114],
+  ['Octg', 1e117],
+  ['Notg', 1e120]
+];
+
+const LEGACY_SCALE_ALIASES: Array<[string, number]> = [
+  ['Qdd', 1e45],
+  ['Qnd', 1e48],
+  ['SxDe', 1e54]
+];
+
 export function buildScaleUtils(scales: Scales): ScaleUtils {
-  const scaleEntries = Object.entries(scales)
+  const scaleMap = new Map<string, number>();
+
+  for (const [suffix, value] of GAME_SCALE_SUFFIXES) {
+    scaleMap.set(suffix, value);
+  }
+
+  for (const [suffix, value] of Object.entries(scales)) {
+    scaleMap.set(suffix, value);
+  }
+
+  for (const [suffix, value] of LEGACY_SCALE_ALIASES) {
+    scaleMap.set(suffix, value);
+  }
+
+  const scaleEntries = [...scaleMap.entries()]
+    .filter(([key]) => key !== '')
+    .sort(([, a], [, b]) => b - a);
+  const formatEntries = GAME_SCALE_SUFFIXES
     .filter(([key]) => key !== '')
     .sort(([, a], [, b]) => b - a);
 
@@ -31,6 +99,7 @@ export function buildScaleUtils(scales: Scales): ScaleUtils {
 
   return {
     scaleEntries: [['', 1], ...scaleEntries],
+    formatEntries,
     lowerCaseScaleMap,
     conflictingLowerCaseSuffixes
   };
@@ -42,7 +111,7 @@ export function parseScaled(input: string, su: ScaleUtils): ParseResult {
     return { value: 0, warning: 'Empty input' };
   }
 
-  if (trimmed.includes('e') || trimmed.includes('E')) {
+  if (/^[+-]?(?:\d+\.?\d*|\.\d+)[eE][+-]?\d+$/.test(trimmed)) {
     const num = Number(trimmed);
     if (!Number.isFinite(num)) {
       return { value: 0, warning: 'Invalid scientific notation' };
@@ -108,19 +177,27 @@ export function formatScaled(num: number, su: ScaleUtils): string {
   const sign = num < 0 ? '-' : '';
 
   if (absNum < 1000) {
-    return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
+    return Number.isInteger(num)
+      ? num.toString()
+      : Number(num.toFixed(6)).toString();
   }
 
-  for (const [suffix, multiplier] of su.scaleEntries) {
+  for (const [suffix, multiplier] of su.formatEntries) {
     if (suffix && absNum >= multiplier) {
       const scaled = absNum / multiplier;
       if (scaled < 1000) {
-        return `${sign}${scaled.toPrecision(3)} ${suffix}`;
+        return `${sign}${scaled.toPrecision(3)}${suffix}`;
       }
     }
   }
 
-  return num.toExponential(3);
+  const largest = su.formatEntries[0];
+  if (largest) {
+    const [suffix, multiplier] = largest;
+    return `${sign}${(absNum / multiplier).toPrecision(3)}${suffix}`;
+  }
+
+  return num.toLocaleString(undefined, { maximumFractionDigits: 6 });
 }
 
 export function formatNumericValue(value: NumericValue | null | undefined, su: ScaleUtils): string {
@@ -132,7 +209,7 @@ export function formatNumericValue(value: NumericValue | null | undefined, su: S
     return formatScaled(value, su);
   }
 
-  return `${value.mantissa.toPrecision(3)}e${value.exponent}`;
+  return formatScaled(value.mantissa * 10 ** value.exponent, su);
 }
 
 export function isSecretMark(mark: MarkRollable): boolean {

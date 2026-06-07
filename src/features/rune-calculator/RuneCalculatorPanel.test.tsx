@@ -104,7 +104,7 @@ describe('RuneCalculatorPanel', () => {
     const user = userEvent.setup();
     render(<RuneCalculatorPanel marksData={testMarksData} scales={testScales} />);
 
-    expect(screen.getByText('Dim')).toBeInTheDocument();
+    expect(screen.getAllByText('Dim').length).toBeGreaterThan(0);
 
     await user.type(screen.getByLabelText('Search'), 'revenge');
 
@@ -146,7 +146,7 @@ describe('RuneCalculatorPanel', () => {
 
     await user.selectOptions(screen.getByLabelText('Effect'), 'BreakthroughLuckPerCopy');
 
-    expect(screen.getByText('Dim')).toBeInTheDocument();
+    expect(screen.getAllByText('Dim').length).toBeGreaterThan(0);
     expect(screen.queryByText('Revenge')).not.toBeInTheDocument();
   });
 });

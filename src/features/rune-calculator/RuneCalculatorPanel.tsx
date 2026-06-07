@@ -86,7 +86,7 @@ function formatProbability(probability: number, su: ScaleUtils): string {
   const oneIn = 1 / probability;
   const percent = probability >= 0.0001
     ? `${(probability * 100).toPrecision(4)}%`
-    : `${probability.toExponential(3)}`;
+    : '<0.0001%';
 
   return `${percent} (1 / ${formatScaled(oneIn, su)})`;
 }
@@ -211,18 +211,18 @@ export default function RuneCalculatorPanel({
   };
 
   return (
-    <main className={`min-h-screen ${isDarkMode ? 'dark bg-slate-950' : 'bg-slate-50'}`}>
+    <main className={`min-h-screen ${isDarkMode ? 'dark' : ''} bg-[radial-gradient(circle_at_50%_0%,#6b2f3c_0%,#2f1e27_42%,#090b13_100%)] text-white`}>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-5 flex flex-col gap-4 border-b border-slate-200 pb-5 dark:border-slate-800 lg:flex-row lg:items-end lg:justify-between">
+        <header className="mb-5 flex flex-col gap-4 border-b-4 border-black/60 pb-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-md bg-cyan-100 px-3 py-1 text-sm font-medium text-cyan-900 dark:bg-cyan-950 dark:text-cyan-200">
+            <div className="mb-2 inline-flex items-center gap-2 rounded-md border-2 border-black bg-cyan-400/90 px-3 py-1 text-sm font-black text-slate-950 shadow-[0_3px_0_#000]">
               <SparkIcon />
               Immortality Incremental
             </div>
-            <h1 className="text-3xl font-bold tracking-normal text-slate-950 dark:text-white">
+            <h1 className="text-3xl font-black tracking-normal text-white drop-shadow-[0_3px_0_#000]">
               Mark Rune Calculator
             </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+            <p className="mt-1 text-sm font-semibold text-cyan-100 drop-shadow-[0_2px_0_#000]">
               {marksData.categories.length} categories, {marksData.categories.reduce((total, category) => total + category.rollables.length, 0)} marks. Currency income is ignored by design.
             </p>
           </div>
@@ -230,20 +230,20 @@ export default function RuneCalculatorPanel({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 text-sm font-black text-white shadow-[0_3px_0_#000] hover:bg-cyan-950"
             >
-              {isDarkMode ? 'Light' : 'Dark'}
+              {isDarkMode ? 'HUD' : 'Glow'}
             </button>
             <a
               href="https://www.roblox.com/"
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 text-sm font-black text-white shadow-[0_3px_0_#000] hover:bg-cyan-950"
             >
               Roblox
             </a>
           </div>
         </header>
 
-        <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section className="mb-5 rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_6px_0_#000] backdrop-blur">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             <NumberInput label="Mark Speed" value={markSpeedInput} onChange={setMarkSpeedInput} result={markSpeed} scaleUtils={scaleUtils} copyLabel="speed" onCopy={copyToClipboard} copiedText={copiedText} />
             <NumberInput label="Mark Bulk" value={markBulkInput} onChange={setMarkBulkInput} result={markBulk} scaleUtils={scaleUtils} copyLabel="bulk" onCopy={copyToClipboard} copiedText={copiedText} />
@@ -253,7 +253,7 @@ export default function RuneCalculatorPanel({
           </div>
 
           {!hasValidInputs && (
-            <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+            <div className="mt-4 rounded-md border-2 border-black bg-red-950 px-4 py-3 text-sm font-bold text-red-100 shadow-[0_3px_0_#000]">
               Mark Speed, Mark Bulk, Mark Luck, Mark Clone, and Target Copies must all be greater than 0.
             </div>
           )}
@@ -266,20 +266,20 @@ export default function RuneCalculatorPanel({
           <StatTile label="Next under 1h" value={nextTarget ? processedMarks.find(mark => mark.id === nextTarget)?.name ?? '-' : '-'} />
         </section>
 
-        <section className="mb-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <section className="mb-5 rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_6px_0_#000] backdrop-blur">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
             <Field label="Search">
               <input
                 type="search"
                 value={filterText}
                 onChange={event => setFilterText(event.target.value)}
-                className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000] placeholder:text-slate-400"
                 placeholder="Name, id, category"
               />
             </Field>
 
             <Field label="Category">
-              <select value={categoryId} onChange={event => setCategoryId(event.target.value)} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+              <select value={categoryId} onChange={event => setCategoryId(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
                 <option value="all">All categories</option>
                 {marksData.categories.map(category => (
                   <option key={category.id} value={category.id}>{category.displayName}</option>
@@ -288,14 +288,14 @@ export default function RuneCalculatorPanel({
             </Field>
 
             <Field label="Tier">
-              <select value={tierFilter} onChange={event => setTierFilter(event.target.value)} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+              <select value={tierFilter} onChange={event => setTierFilter(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
                 <option value="all">All tiers</option>
                 {tiers.map(tier => <option key={tier} value={tier}>Tier {tier}</option>)}
               </select>
             </Field>
 
             <Field label="Secret">
-              <select value={secretFilter} onChange={event => setSecretFilter(event.target.value as 'all' | 'secret' | 'nonSecret')} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+              <select value={secretFilter} onChange={event => setSecretFilter(event.target.value as 'all' | 'secret' | 'nonSecret')} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
                 <option value="all">All allowed</option>
                 <option value="secret">Secret only</option>
                 <option value="nonSecret">Non-secret only</option>
@@ -303,14 +303,14 @@ export default function RuneCalculatorPanel({
             </Field>
 
             <Field label="Effect">
-              <select value={effectType} onChange={event => setEffectType(event.target.value)} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+              <select value={effectType} onChange={event => setEffectType(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
                 <option value="all">All effects</option>
                 {effectTypes.map(effect => <option key={effect} value={effect}>{formatEffectName(effect)}</option>)}
               </select>
             </Field>
 
             <Field label="Sort">
-              <select value={sortOrder} onChange={event => setSortOrder(event.target.value as 'asc' | 'desc')} className="w-full rounded-md border-slate-300 text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+              <select value={sortOrder} onChange={event => setSortOrder(event.target.value as 'asc' | 'desc')} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
                 <option value="asc">Fastest ETA</option>
                 <option value="desc">Slowest ETA</option>
               </select>
@@ -323,12 +323,12 @@ export default function RuneCalculatorPanel({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Rune Browser</h2>
+        <section className="overflow-hidden rounded-lg border-4 border-black bg-slate-950/80 shadow-[0_6px_0_#000] backdrop-blur">
+          <div className="border-b-4 border-black bg-slate-900/90 px-4 py-3">
+            <h2 className="text-lg font-black text-white drop-shadow-[0_2px_0_#000]">Rune Browser</h2>
           </div>
 
-          <div className="divide-y divide-slate-200 dark:divide-slate-800">
+          <div className="divide-y-4 divide-black/60">
             {processedMarks.map(mark => (
               <MarkRow
                 key={`${mark.categoryId}-${mark.id}`}
@@ -343,8 +343,8 @@ export default function RuneCalculatorPanel({
 
           {processedMarks.length === 0 && (
             <div className="px-4 py-14 text-center">
-              <h3 className="font-medium text-slate-950 dark:text-white">No marks match the current filters</h3>
-              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Adjust category, tier, effect, or secret settings.</p>
+              <h3 className="font-black text-white">No marks match the current filters</h3>
+              <p className="mt-1 text-sm font-semibold text-cyan-100">Adjust category, tier, effect, or secret settings.</p>
             </div>
           )}
         </section>
@@ -372,19 +372,19 @@ function NumberInput({ label, value, onChange, result, scaleUtils, copyLabel, on
           type="text"
           value={value}
           onChange={event => onChange(event.target.value)}
-          className="w-full rounded-md border-slate-300 pr-10 font-mono text-sm dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-          placeholder="1, 10K, 1e9"
+          className="w-full rounded-md border-2 border-black bg-slate-900/90 pr-10 font-mono text-sm font-bold text-white shadow-[0_3px_0_#000] placeholder:text-slate-400"
+          placeholder="1, 10K, 1Qid"
         />
         <button
           type="button"
           onClick={() => onCopy(formatScaled(result.value, scaleUtils), copyLabel)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-cyan-200 hover:bg-cyan-900 hover:text-white"
           title={`Copy parsed ${label}`}
         >
           {copiedText === copyLabel ? <CheckIcon /> : <CopyIcon />}
         </button>
       </div>
-      <div className="mt-1 min-h-5 text-xs text-slate-500 dark:text-slate-400">
+      <div className="mt-2 min-h-5 text-xs font-semibold text-cyan-100">
         Parsed: <span className="font-mono font-medium">{formatScaled(result.value, scaleUtils)}</span>
         {result.warning && <span className="ml-1 text-amber-700 dark:text-amber-300">{result.warning}</span>}
       </div>
@@ -395,7 +395,7 @@ function NumberInput({ label, value, onChange, result, scaleUtils, copyLabel, on
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">{label}</span>
+      <span className="mb-1 block text-sm font-black text-white drop-shadow-[0_2px_0_#000]">{label}</span>
       {children}
     </label>
   );
@@ -403,12 +403,12 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+    <label className="inline-flex items-center gap-2 text-sm font-bold text-white drop-shadow-[0_2px_0_#000]">
       <input
         type="checkbox"
         checked={checked}
         onChange={event => onChange(event.target.checked)}
-        className="rounded border-slate-300 text-cyan-700 focus:ring-cyan-700 dark:border-slate-700 dark:bg-slate-950"
+        className="rounded border-2 border-black bg-slate-900 text-cyan-400 focus:ring-cyan-400"
       />
       {label}
     </label>
@@ -417,9 +417,9 @@ function Checkbox({ label, checked, onChange }: { label: string; checked: boolea
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="text-xs font-medium uppercase text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="mt-1 truncate text-xl font-semibold text-slate-950 dark:text-white">{value}</div>
+    <div className="rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_5px_0_#000]">
+      <div className="text-xs font-black uppercase text-cyan-200 drop-shadow-[0_2px_0_#000]">{label}</div>
+      <div className="mt-1 truncate text-xl font-black text-white drop-shadow-[0_2px_0_#000]">{value}</div>
     </div>
   );
 }
@@ -442,18 +442,18 @@ function MarkRow({
   const effectEntries = Object.entries(mark.effects ?? {});
 
   return (
-    <article className={`px-4 py-4 ${isNextTarget ? 'bg-amber-50 dark:bg-amber-950/30' : ''}`}>
+    <article className={`px-4 py-4 transition-colors ${isNextTarget ? 'bg-cyan-950/50' : 'bg-slate-950/35 hover:bg-slate-900/70'}`}>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(280px,0.9fr)]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-semibold text-slate-950 dark:text-white">{mark.name}</h3>
-            <span className="rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200">{mark.categoryName}</span>
-            <span className="rounded-md bg-cyan-100 px-2 py-1 text-xs font-medium text-cyan-900 dark:bg-cyan-950 dark:text-cyan-200">Tier {mark.tier}</span>
-            <span className="rounded-md bg-violet-100 px-2 py-1 text-xs font-medium text-violet-900 dark:bg-violet-950 dark:text-violet-200">{mark.rarityText}</span>
-            {mark.isSecret && <span className="rounded-md bg-rose-100 px-2 py-1 text-xs font-medium text-rose-900 dark:bg-rose-950 dark:text-rose-200">Secret</span>}
-            {isNextTarget && <span className="rounded-md bg-amber-200 px-2 py-1 text-xs font-medium text-amber-950 dark:bg-amber-900 dark:text-amber-100">Next Target</span>}
+            <h3 className="text-lg font-black text-white drop-shadow-[0_2px_0_#000]">{mark.name}</h3>
+            <span className="rounded-md border-2 border-black bg-slate-800 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">{mark.categoryName}</span>
+            <span className="rounded-md border-2 border-black bg-cyan-400 px-2 py-1 text-xs font-black text-slate-950 shadow-[0_2px_0_#000]">Tier {mark.tier}</span>
+            <span className="rounded-md border-2 border-black bg-violet-500 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">{mark.rarityText}</span>
+            {mark.isSecret && <span className="rounded-md border-2 border-black bg-rose-500 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">Secret</span>}
+            {isNextTarget && <span className="rounded-md border-2 border-black bg-amber-300 px-2 py-1 text-xs font-black text-slate-950 shadow-[0_2px_0_#000]">Next Target</span>}
           </div>
-          <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-2 text-sm font-semibold text-cyan-100 drop-shadow-[0_2px_0_#000]">
             ID {mark.id} · Cost {formatScaled(mark.costPerBaseOpen, scaleUtils)} {mark.costCurrency} · Base interval {mark.baseOpenIntervalSeconds}s
           </div>
         </div>
@@ -468,19 +468,19 @@ function MarkRow({
         </div>
 
         <div>
-          <div className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-200">Effects and caps</div>
+          <div className="mb-2 text-sm font-black text-white drop-shadow-[0_2px_0_#000]">Effects and caps</div>
           {effectEntries.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {effectEntries.map(([effect, perCopy]) => (
-                <span key={effect} className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
+                <span key={effect} className="rounded-md border-2 border-black bg-slate-900/90 px-2 py-1 text-xs font-semibold text-white shadow-[0_2px_0_#000]">
                   <span className="font-medium">{formatEffectName(effect)}</span>: {formatScaled(perCopy, scaleUtils)}
-                  <span className="text-slate-500 dark:text-slate-400"> cap {formatNumericValue(mark.effectCaps?.[effect], scaleUtils)}</span>
-                  {mark.effectCurves?.[effect] && <span className="text-cyan-700 dark:text-cyan-300"> curve</span>}
+                  <span className="text-cyan-200"> cap {formatNumericValue(mark.effectCaps?.[effect], scaleUtils)}</span>
+                  {mark.effectCurves?.[effect] && <span className="text-cyan-300"> curve</span>}
                 </span>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-slate-500 dark:text-slate-400">No effects listed</div>
+            <div className="text-sm font-semibold text-cyan-100">No effects listed</div>
           )}
         </div>
       </div>
@@ -504,16 +504,16 @@ function Metric({
   onCopy?: () => void;
 }) {
   return (
-    <div className="min-w-0 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-950">
-      <div className="flex items-center justify-between gap-2 text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
+    <div className="min-w-0 rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 shadow-[0_3px_0_#000]">
+      <div className="flex items-center justify-between gap-2 text-xs font-black uppercase text-cyan-200">
         <span>{label}</span>
         {onCopy && copyLabel && (
-          <button type="button" onClick={onCopy} className="rounded p-1 hover:bg-slate-200 dark:hover:bg-slate-800" title={`Copy ${label}`}>
+          <button type="button" onClick={onCopy} className="rounded p-1 hover:bg-cyan-900" title={`Copy ${label}`}>
             {copiedText === copyLabel ? <CheckIcon /> : <CopyIcon />}
           </button>
         )}
       </div>
-      <div className={`mt-1 truncate font-mono text-sm ${strong ? 'font-bold text-cyan-800 dark:text-cyan-200' : 'font-medium text-slate-900 dark:text-white'}`}>
+      <div className={`mt-1 break-words font-mono text-sm drop-shadow-[0_2px_0_#000] ${strong ? 'font-black text-cyan-200' : 'font-bold text-white'}`}>
         {value}
       </div>
     </div>

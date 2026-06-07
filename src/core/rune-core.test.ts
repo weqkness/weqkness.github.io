@@ -96,14 +96,10 @@ describe('buildScaleUtils', () => {
   it('builds scale utilities and detects ambiguous suffixes', () => {
     const su = buildScaleUtils(testScales);
 
-    expect(su.scaleEntries).toEqual([
-      ['', 1],
-      ['T', 1000000000000],
-      ['B', 1000000000],
-      ['M', 1000000],
-      ['k', 1000],
-      ['K', 1000]
-    ]);
+    expect(su.scaleEntries).toContainEqual(['Qid', 1e48]);
+    expect(su.scaleEntries).toContainEqual(['Qnd', 1e48]);
+    expect(su.scaleEntries).toContainEqual(['Tvg', 1e72]);
+    expect(su.scaleEntries).toContainEqual(['K', 1000]);
     expect(su.conflictingLowerCaseSuffixes.has('k')).toBe(true);
   });
 });
@@ -115,6 +111,10 @@ describe('parseScaled', () => {
     expect(parseScaled('123', su)).toEqual({ value: 123, warning: null });
     expect(parseScaled('1.5E6', su)).toEqual({ value: 1500000, warning: null });
     expect(parseScaled('499.99T', su)).toEqual({ value: 499.99e12, warning: null });
+    expect(parseScaled('1Qid', su).value).toBe(1e48);
+    expect(parseScaled('1Qnd', su).value).toBe(1e48);
+    expect(parseScaled('1SxDe', su).value).toBe(1e54);
+    expect(parseScaled('59.44Tvg', su).value).toBe(59.44e72);
   });
 
   it('warns for ambiguous suffixes', () => {
@@ -135,8 +135,10 @@ describe('formatScaled', () => {
 
   it('formats small and large values', () => {
     expect(formatScaled(123, su)).toBe('123');
-    expect(formatScaled(1200000000, su)).toBe('1.20 B');
-    expect(formatScaled(1e60, su)).toBe('1.000e+60');
+    expect(formatScaled(1200000000, su)).toBe('1.20B');
+    expect(formatScaled(1e48, su)).toBe('1.00Qid');
+    expect(formatScaled(59.44e72, su)).toBe('59.4Tvg');
+    expect(formatScaled(1.418e84, su)).toBe('1.42Spvg');
   });
 });
 
