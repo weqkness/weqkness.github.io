@@ -350,7 +350,7 @@
       "currencyField": "Essence",
       "costCurrencyName": "Essence",
       "baseCostPerOpen": 100000000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -602,7 +602,7 @@
       "currencyField": "Soulfire",
       "costCurrencyName": "Soulfire",
       "baseCostPerOpen": 5000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -897,7 +897,7 @@
       "currencyField": "Karma",
       "costCurrencyName": "Karma",
       "baseCostPerOpen": 50,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -1184,7 +1184,7 @@
       "currencyField": "Stars",
       "costCurrencyName": "Stars",
       "baseCostPerOpen": 2000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -1587,7 +1587,7 @@
       "currencyField": "Nebula",
       "costCurrencyName": "Nebulae",
       "baseCostPerOpen": 5000000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -2007,7 +2007,7 @@
       "currencyField": "Quasar",
       "costCurrencyName": "Quasar",
       "baseCostPerOpen": 1000000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -2426,7 +2426,7 @@
       "currencyField": "Miasma",
       "costCurrencyName": "Miasma",
       "baseCostPerOpen": 1000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
@@ -2780,7 +2780,7 @@
       "currencyField": "Ash",
       "costCurrencyName": "Ash",
       "baseCostPerOpen": 1000000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": "#8E8794",
       "rollables": [
@@ -3094,7 +3094,7 @@
       "currencyField": "Laws",
       "costCurrencyName": "Laws",
       "baseCostPerOpen": 1000000000,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": "#8FD3FF",
       "rollables": [
