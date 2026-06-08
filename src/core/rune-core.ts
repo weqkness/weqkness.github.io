@@ -363,6 +363,8 @@ export function processMarks(
     }))
   );
 
+  processed = processed.filter(mark => mark.estimate.exclusiveTierProbability > 0);
+
   if (!opts.showSecret && opts.secretFilter !== 'secret') {
     processed = processed.filter(mark => !mark.isSecret);
   }

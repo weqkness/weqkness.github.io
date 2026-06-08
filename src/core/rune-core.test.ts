@@ -190,6 +190,25 @@ describe('processMarks', () => {
     expect(processMarks([testCategory], 1, 1, 1, 1, 1, { secretFilter: 'secret' })).toHaveLength(1);
   });
 
+  it('filters marks with zero calculated chance', () => {
+    const zeroChanceCategory: MarkCategory = {
+      ...testCategory,
+      rollables: [
+        ...testCategory.rollables,
+        {
+          ...testCategory.rollables[1],
+          id: 'impossible',
+          name: 'Impossible',
+          baseExclusiveDropChanceAtLuck1: 0
+        }
+      ]
+    };
+
+    const processed = processMarks([zeroChanceCategory], 1, 1, 1, 1, 1, { showSecret: true });
+
+    expect(processed.map(mark => mark.id)).not.toContain('impossible');
+  });
+
   it('filters by text, tier, category, and effect type', () => {
     expect(processMarks([testCategory], 1, 1, 1, 1, 1, { text: 'bright' })[0].id).toBe('bright');
     expect(processMarks([testCategory], 1, 1, 1, 1, 1, { tier: 2 })[0].id).toBe('bright');
