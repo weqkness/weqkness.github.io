@@ -61,7 +61,7 @@
       "currencyField": "Insight",
       "costCurrencyName": "Insight",
       "baseCostPerOpen": 250,
-      "baseOpenIntervalSeconds": 0.5,
+      "baseOpenIntervalSeconds": 1,
       "rollMode": "CumulativeDenominator",
       "buttonAccentHex": null,
       "rollables": [
