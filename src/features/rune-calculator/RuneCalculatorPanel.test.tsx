@@ -132,9 +132,9 @@ describe('RuneCalculatorPanel', () => {
 
     await user.click(screen.getByRole('checkbox', { name: /Show Secret Marks/ }));
 
-    expect((await screen.findAllByText('5 seconds')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('10 seconds')).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/10.00%/).length).toBeGreaterThan(0);
-    expect(screen.getByText('720')).toBeInTheDocument();
+    expect(screen.getByText('360')).toBeInTheDocument();
   });
 
   it('filters by effect type', async () => {

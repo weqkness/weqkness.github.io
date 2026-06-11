@@ -139,7 +139,7 @@ describe('formatScaled', () => {
     expect(formatScaled(1e48, su)).toBe('1Qid');
     expect(formatScaled(59.44e72, su)).toBe('59.44Tvg');
     expect(formatScaled(1.418e84, su)).toBe('1.42Spvg');
-    expect(formatScaled(1e123, su)).toBe('1000Notg');
+    expect(formatScaled(1e123, su)).toBe('1Qag');
   });
 });
 
@@ -160,9 +160,17 @@ describe('mark probability math', () => {
     expect(probabilities.get('secret')).toBe(0.1);
   });
 
-  it('calculates marks per second from speed, interval, and bulk', () => {
-    expect(calculateMarksPerSecond(2, 3, 0.5)).toBe(12);
+  it('calculates marks per second from speed and bulk', () => {
+    expect(calculateMarksPerSecond(2, 3, 0.5)).toBe(6);
     expect(calculateMarksPerSecond(0, 3, 0.5)).toBe(0);
+  });
+
+  it('matches the game opens per second display for high scaled stats', () => {
+    const su = buildScaleUtils(testScales);
+    const markSpeed = parseScaled('58.29Sp', su).value;
+    const markBulk = parseScaled('12.67Qid', su).value;
+
+    expect(formatScaled(calculateMarksPerSecond(markSpeed, markBulk, 0.5), su)).toBe('738.53Tvg');
   });
 
   it('calculates target ETA with clone amplification', () => {
@@ -176,10 +184,10 @@ describe('mark probability math', () => {
       4
     );
 
-    expect(estimate.marksPerSecond).toBe(2);
+    expect(estimate.marksPerSecond).toBe(1);
     expect(estimate.exclusiveTierProbability).toBe(0.09);
-    expect(estimate.expectedCopiesPerHour).toBe(1296);
-    expect(estimate.secondsForTargetCopies).toBeCloseTo(11.1111);
+    expect(estimate.expectedCopiesPerHour).toBe(648);
+    expect(estimate.secondsForTargetCopies).toBeCloseTo(22.2222);
   });
 });
 
@@ -228,7 +236,7 @@ describe('processMarks', () => {
 describe('findNextUnderHour', () => {
   it('finds the first non-instant target under an hour', () => {
     const processed = processMarks([testCategory], 1, 1, 1, 1, 1, { sort: 'asc' });
-    expect(findNextUnderHour(processed)).toBe('bright');
+    expect(findNextUnderHour(processed)).toBe('dim');
   });
 
   it('returns null if no visible mark fits the window', () => {

@@ -297,7 +297,7 @@ export function calculateMarksPerSecond(
     return 0;
   }
 
-  return (markSpeed / baseOpenIntervalSeconds) * markBulk;
+  return markSpeed * markBulk;
 }
 
 function clamp(value: number, min: number, max: number): number {

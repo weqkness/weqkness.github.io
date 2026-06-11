@@ -31,6 +31,10 @@ const SparkIcon = () => (
   </svg>
 );
 
+const panelClass = 'neon-panel rounded-2xl p-4';
+const controlClass = 'neon-control w-full rounded-xl px-3 py-2 text-sm font-bold text-white';
+const buttonClass = 'neon-button rounded-xl px-4 py-2 text-sm font-black text-white';
+
 interface Props {
   marksData: MarksData;
   scales: Scales;
@@ -211,18 +215,18 @@ export default function RuneCalculatorPanel({
   };
 
   return (
-    <main className={`min-h-screen ${isDarkMode ? 'dark' : ''} bg-[radial-gradient(circle_at_50%_0%,#6b2f3c_0%,#2f1e27_42%,#090b13_100%)] text-white`}>
+    <main className={`neon-app min-h-screen ${isDarkMode ? 'dark' : ''} text-white`}>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <header className="mb-5 flex flex-col gap-4 border-b-4 border-black/60 pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <header className="neon-header mb-5 flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-md border-2 border-black bg-cyan-400/90 px-3 py-1 text-sm font-black text-slate-950 shadow-[0_3px_0_#000]">
+            <div className="neon-chip neon-chip-primary mb-3 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-black uppercase">
               <SparkIcon />
               Immortality Incremental
             </div>
-            <h1 className="text-3xl font-black tracking-normal text-white drop-shadow-[0_3px_0_#000]">
+            <h1 className="neon-title text-4xl font-black text-white">
               Mark Rune Calculator
             </h1>
-            <p className="mt-1 text-sm font-semibold text-cyan-100 drop-shadow-[0_2px_0_#000]">
+            <p className="neon-subtitle mt-2 max-w-2xl text-sm font-semibold">
               {marksData.categories.length} categories, {marksData.categories.reduce((total, category) => total + category.rollables.length, 0)} marks. Currency income is ignored by design.
             </p>
           </div>
@@ -230,20 +234,20 @@ export default function RuneCalculatorPanel({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 text-sm font-black text-white shadow-[0_3px_0_#000] hover:bg-cyan-950"
+              className={`${buttonClass} ${isDarkMode ? 'is-active' : ''}`}
             >
-              {isDarkMode ? 'HUD' : 'Glow'}
+              {isDarkMode ? 'HUD Active' : 'Neon Glow'}
             </button>
             <a
               href="https://www.roblox.com/"
-              className="rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 text-sm font-black text-white shadow-[0_3px_0_#000] hover:bg-cyan-950"
+              className={buttonClass}
             >
               Roblox
             </a>
           </div>
         </header>
 
-        <section className="mb-5 rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_6px_0_#000] backdrop-blur">
+        <section className={`${panelClass} mb-5`}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             <NumberInput label="Mark Speed" value={markSpeedInput} onChange={setMarkSpeedInput} result={markSpeed} scaleUtils={scaleUtils} copyLabel="speed" onCopy={copyToClipboard} copiedText={copiedText} />
             <NumberInput label="Mark Bulk" value={markBulkInput} onChange={setMarkBulkInput} result={markBulk} scaleUtils={scaleUtils} copyLabel="bulk" onCopy={copyToClipboard} copiedText={copiedText} />
@@ -253,7 +257,7 @@ export default function RuneCalculatorPanel({
           </div>
 
           {!hasValidInputs && (
-            <div className="mt-4 rounded-md border-2 border-black bg-red-950 px-4 py-3 text-sm font-bold text-red-100 shadow-[0_3px_0_#000]">
+            <div className="neon-alert mt-4 rounded-xl px-4 py-3 text-sm font-bold">
               Mark Speed, Mark Bulk, Mark Luck, Mark Clone, and Target Copies must all be greater than 0.
             </div>
           )}
@@ -266,20 +270,20 @@ export default function RuneCalculatorPanel({
           <StatTile label="Next under 1h" value={nextTarget ? processedMarks.find(mark => mark.id === nextTarget)?.name ?? '-' : '-'} />
         </section>
 
-        <section className="mb-5 rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_6px_0_#000] backdrop-blur">
+        <section className={`${panelClass} mb-5`}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
             <Field label="Search">
               <input
                 type="search"
                 value={filterText}
                 onChange={event => setFilterText(event.target.value)}
-                className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000] placeholder:text-slate-400"
+                className={controlClass}
                 placeholder="Name, id, category"
               />
             </Field>
 
             <Field label="Category">
-              <select value={categoryId} onChange={event => setCategoryId(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
+              <select value={categoryId} onChange={event => setCategoryId(event.target.value)} className={controlClass}>
                 <option value="all">All categories</option>
                 {marksData.categories.map(category => (
                   <option key={category.id} value={category.id}>{category.displayName}</option>
@@ -288,14 +292,14 @@ export default function RuneCalculatorPanel({
             </Field>
 
             <Field label="Tier">
-              <select value={tierFilter} onChange={event => setTierFilter(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
+              <select value={tierFilter} onChange={event => setTierFilter(event.target.value)} className={controlClass}>
                 <option value="all">All tiers</option>
                 {tiers.map(tier => <option key={tier} value={tier}>Tier {tier}</option>)}
               </select>
             </Field>
 
             <Field label="Secret">
-              <select value={secretFilter} onChange={event => setSecretFilter(event.target.value as 'all' | 'secret' | 'nonSecret')} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
+              <select value={secretFilter} onChange={event => setSecretFilter(event.target.value as 'all' | 'secret' | 'nonSecret')} className={controlClass}>
                 <option value="all">All allowed</option>
                 <option value="secret">Secret only</option>
                 <option value="nonSecret">Non-secret only</option>
@@ -303,14 +307,14 @@ export default function RuneCalculatorPanel({
             </Field>
 
             <Field label="Effect">
-              <select value={effectType} onChange={event => setEffectType(event.target.value)} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
+              <select value={effectType} onChange={event => setEffectType(event.target.value)} className={controlClass}>
                 <option value="all">All effects</option>
                 {effectTypes.map(effect => <option key={effect} value={effect}>{formatEffectName(effect)}</option>)}
               </select>
             </Field>
 
             <Field label="Sort">
-              <select value={sortOrder} onChange={event => setSortOrder(event.target.value as 'asc' | 'desc')} className="w-full rounded-md border-2 border-black bg-slate-900/90 text-sm font-bold text-white shadow-[0_3px_0_#000]">
+              <select value={sortOrder} onChange={event => setSortOrder(event.target.value as 'asc' | 'desc')} className={controlClass}>
                 <option value="asc">Fastest ETA</option>
                 <option value="desc">Slowest ETA</option>
               </select>
@@ -323,12 +327,12 @@ export default function RuneCalculatorPanel({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-lg border-4 border-black bg-slate-950/80 shadow-[0_6px_0_#000] backdrop-blur">
-          <div className="border-b-4 border-black bg-slate-900/90 px-4 py-3">
-            <h2 className="text-lg font-black text-white drop-shadow-[0_2px_0_#000]">Rune Browser</h2>
+        <section className="neon-panel overflow-hidden rounded-2xl">
+          <div className="neon-section-title px-4 py-3">
+            <h2 className="text-lg font-black text-white">Rune Browser</h2>
           </div>
 
-          <div className="divide-y-4 divide-black/60">
+          <div className="divide-y divide-cyan-300/10">
             {processedMarks.map(mark => (
               <MarkRow
                 key={`${mark.categoryId}-${mark.id}`}
@@ -372,21 +376,21 @@ function NumberInput({ label, value, onChange, result, scaleUtils, copyLabel, on
           type="text"
           value={value}
           onChange={event => onChange(event.target.value)}
-          className="w-full rounded-md border-2 border-black bg-slate-900/90 pr-10 font-mono text-sm font-bold text-white shadow-[0_3px_0_#000] placeholder:text-slate-400"
+          className={`${controlClass} pr-10 font-mono`}
           placeholder="1, 10K, 1Qid"
         />
         <button
           type="button"
           onClick={() => onCopy(formatScaled(result.value, scaleUtils), copyLabel)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-cyan-200 hover:bg-cyan-900 hover:text-white"
+          className="neon-icon-button absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1 text-cyan-100"
           title={`Copy parsed ${label}`}
         >
           {copiedText === copyLabel ? <CheckIcon /> : <CopyIcon />}
         </button>
       </div>
-      <div className="mt-2 min-h-5 text-xs font-semibold text-cyan-100">
+      <div className="mt-2 min-h-5 text-xs font-semibold text-cyan-100/90">
         Parsed: <span className="font-mono font-medium">{formatScaled(result.value, scaleUtils)}</span>
-        {result.warning && <span className="ml-1 text-amber-700 dark:text-amber-300">{result.warning}</span>}
+        {result.warning && <span className="ml-1 text-amber-300">{result.warning}</span>}
       </div>
     </Field>
   );
@@ -395,7 +399,7 @@ function NumberInput({ label, value, onChange, result, scaleUtils, copyLabel, on
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-black text-white drop-shadow-[0_2px_0_#000]">{label}</span>
+      <span className="neon-field-label mb-1.5 block text-xs font-black uppercase">{label}</span>
       {children}
     </label>
   );
@@ -403,12 +407,12 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 
 function Checkbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: (checked: boolean) => void }) {
   return (
-    <label className="inline-flex items-center gap-2 text-sm font-bold text-white drop-shadow-[0_2px_0_#000]">
+    <label className="neon-toggle inline-flex items-center gap-2 text-sm font-bold text-white">
       <input
         type="checkbox"
         checked={checked}
         onChange={event => onChange(event.target.checked)}
-        className="rounded border-2 border-black bg-slate-900 text-cyan-400 focus:ring-cyan-400"
+        className="h-4 w-4 rounded border-cyan-300/60 bg-slate-950 text-fuchsia-400 focus:ring-fuchsia-400"
       />
       {label}
     </label>
@@ -417,9 +421,9 @@ function Checkbox({ label, checked, onChange }: { label: string; checked: boolea
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border-4 border-black bg-slate-950/80 p-4 shadow-[0_5px_0_#000]">
-      <div className="text-xs font-black uppercase text-cyan-200 drop-shadow-[0_2px_0_#000]">{label}</div>
-      <div className="mt-1 truncate text-xl font-black text-white drop-shadow-[0_2px_0_#000]">{value}</div>
+    <div className="neon-stat rounded-2xl p-4">
+      <div className="text-xs font-black uppercase text-cyan-200">{label}</div>
+      <div className="mt-2 break-words text-xl font-black text-white">{value}</div>
     </div>
   );
 }
@@ -442,19 +446,19 @@ function MarkRow({
   const effectEntries = Object.entries(mark.effects ?? {});
 
   return (
-    <article className={`px-4 py-4 transition-colors ${isNextTarget ? 'bg-cyan-950/50' : 'bg-slate-950/35 hover:bg-slate-900/70'}`}>
+    <article className={`neon-row px-4 py-4 transition-colors ${isNextTarget ? 'is-target' : ''}`}>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(280px,0.9fr)]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-lg font-black text-white drop-shadow-[0_2px_0_#000]">{mark.name}</h3>
-            <span className="rounded-md border-2 border-black bg-slate-800 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">{mark.categoryName}</span>
-            <span className="rounded-md border-2 border-black bg-cyan-400 px-2 py-1 text-xs font-black text-slate-950 shadow-[0_2px_0_#000]">Tier {mark.tier}</span>
-            <span className="rounded-md border-2 border-black bg-violet-500 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">{mark.rarityText}</span>
-            {mark.isSecret && <span className="rounded-md border-2 border-black bg-rose-500 px-2 py-1 text-xs font-black text-white shadow-[0_2px_0_#000]">Secret</span>}
-            {isNextTarget && <span className="rounded-md border-2 border-black bg-amber-300 px-2 py-1 text-xs font-black text-slate-950 shadow-[0_2px_0_#000]">Next Target</span>}
+            <h3 className="neon-rune-name text-lg font-black text-white">{mark.name}</h3>
+            <span className="neon-badge neon-badge-muted">{mark.categoryName}</span>
+            <span className="neon-badge neon-badge-cyan">Tier {mark.tier}</span>
+            <span className="neon-badge neon-badge-purple">{mark.rarityText}</span>
+            {mark.isSecret && <span className="neon-badge neon-badge-pink">Secret</span>}
+            {isNextTarget && <span className="neon-badge neon-badge-gold">Next Target</span>}
           </div>
-          <div className="mt-2 text-sm font-semibold text-cyan-100 drop-shadow-[0_2px_0_#000]">
-            ID {mark.id} · Cost {formatScaled(mark.costPerBaseOpen, scaleUtils)} {mark.costCurrency} · Base interval {mark.baseOpenIntervalSeconds}s
+          <div className="mt-2 text-sm font-semibold text-cyan-100/80">
+            ID {mark.id} - Cost {formatScaled(mark.costPerBaseOpen, scaleUtils)} {mark.costCurrency}
           </div>
         </div>
 
@@ -468,13 +472,13 @@ function MarkRow({
         </div>
 
         <div>
-          <div className="mb-2 text-sm font-black text-white drop-shadow-[0_2px_0_#000]">Effects and caps</div>
+          <div className="neon-field-label mb-2 text-xs font-black uppercase">Effects and caps</div>
           {effectEntries.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {effectEntries.map(([effect, perCopy]) => (
-                <span key={effect} className="rounded-md border-2 border-black bg-slate-900/90 px-2 py-1 text-xs font-semibold text-white shadow-[0_2px_0_#000]">
+                <span key={effect} className="neon-effect-pill rounded-lg px-2.5 py-1 text-xs font-semibold text-white">
                   <span className="font-medium">{formatEffectName(effect)}</span>: {formatScaled(perCopy, scaleUtils)}
-                  <span className="text-cyan-200"> cap {formatNumericValue(mark.effectCaps?.[effect], scaleUtils)}</span>
+                  <span className="text-cyan-200/90"> cap {formatNumericValue(mark.effectCaps?.[effect], scaleUtils)}</span>
                   {mark.effectCurves?.[effect] && <span className="text-cyan-300"> curve</span>}
                 </span>
               ))}
@@ -504,16 +508,16 @@ function Metric({
   onCopy?: () => void;
 }) {
   return (
-    <div className="min-w-0 rounded-md border-2 border-black bg-slate-900/90 px-3 py-2 shadow-[0_3px_0_#000]">
+    <div className="neon-metric min-w-0 rounded-xl px-3 py-2">
       <div className="flex items-center justify-between gap-2 text-xs font-black uppercase text-cyan-200">
         <span>{label}</span>
         {onCopy && copyLabel && (
-          <button type="button" onClick={onCopy} className="rounded p-1 hover:bg-cyan-900" title={`Copy ${label}`}>
+          <button type="button" onClick={onCopy} className="neon-icon-button rounded-lg p-1" title={`Copy ${label}`}>
             {copiedText === copyLabel ? <CheckIcon /> : <CopyIcon />}
           </button>
         )}
       </div>
-      <div className={`mt-1 break-words font-mono text-sm drop-shadow-[0_2px_0_#000] ${strong ? 'font-black text-cyan-200' : 'font-bold text-white'}`}>
+      <div className={`mt-1 break-words font-mono text-sm ${strong ? 'font-black text-fuchsia-100' : 'font-bold text-white'}`}>
         {value}
       </div>
     </div>
