@@ -23,12 +23,142 @@ body::selection {
 }
 
 .neon-app {
-  position: relative;
-  overflow-x: hidden;
-  background:
+  --app-background:
     radial-gradient(circle at 20% 10%, rgba(168, 85, 247, 0.34), transparent 28rem),
     radial-gradient(circle at 82% 18%, rgba(34, 211, 238, 0.26), transparent 26rem),
     linear-gradient(135deg, #050816 0%, #0d0b24 42%, #170824 100%);
+  --grid-line-a: rgba(125, 211, 252, 0.055);
+  --grid-line-b: rgba(216, 180, 254, 0.045);
+  --scanline: rgba(6, 182, 212, 0.08);
+  --header-border: rgba(34, 211, 238, 0.38);
+  --header-shadow-a: rgba(168, 85, 247, 0.42);
+  --header-shadow-b: rgba(6, 182, 212, 0.08);
+  --title-glow-a: rgba(34, 211, 238, 0.75);
+  --title-glow-b: rgba(168, 85, 247, 0.55);
+  --subtitle: rgba(207, 250, 254, 0.82);
+  --edge-border: rgba(125, 211, 252, 0.45);
+  --soft-glow: rgba(34, 211, 238, 0.16);
+  --inset-light: rgba(255, 255, 255, 0.04);
+  --chip-primary-bg: linear-gradient(90deg, rgba(14, 165, 233, 0.32), rgba(168, 85, 247, 0.38));
+  --panel-border: rgba(125, 211, 252, 0.34);
+  --panel-bg:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(30, 16, 62, 0.78)),
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 18rem);
+  --panel-shadow-a: rgba(168, 85, 247, 0.18);
+  --panel-shadow-b: rgba(34, 211, 238, 0.16);
+  --panel-sheen: rgba(34, 211, 238, 0.16);
+  --section-border: rgba(34, 211, 238, 0.34);
+  --section-bg: linear-gradient(90deg, rgba(14, 165, 233, 0.16), rgba(168, 85, 247, 0.14));
+  --control-border: rgba(125, 211, 252, 0.38);
+  --control-bg: rgba(2, 6, 23, 0.72);
+  --control-shadow-a: rgba(14, 165, 233, 0.08);
+  --control-shadow-b: rgba(168, 85, 247, 0.08);
+  --control-placeholder: rgba(148, 163, 184, 0.82);
+  --control-focus-border: rgba(34, 211, 238, 0.9);
+  --control-focus-bg: rgba(15, 23, 42, 0.88);
+  --control-focus-shadow-a: rgba(34, 211, 238, 0.13);
+  --control-focus-shadow-b: rgba(168, 85, 247, 0.22);
+  --button-border: rgba(125, 211, 252, 0.45);
+  --button-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(126, 34, 206, 0.4));
+  --button-shadow: rgba(34, 211, 238, 0.18);
+  --hover-border: rgba(34, 211, 238, 0.86);
+  --hover-shadow-a: rgba(34, 211, 238, 0.28);
+  --hover-shadow-b: rgba(168, 85, 247, 0.25);
+  --active-button-border: rgba(217, 70, 239, 0.95);
+  --active-button-bg: linear-gradient(135deg, rgba(34, 211, 238, 0.24), rgba(217, 70, 239, 0.5));
+  --alert-border: rgba(251, 113, 133, 0.55);
+  --alert-bg: rgba(76, 5, 25, 0.78);
+  --alert-shadow: rgba(244, 63, 94, 0.18);
+  --alert-text: #ffe4e6;
+  --field-label: rgba(165, 243, 252, 0.84);
+  --field-label-shadow: rgba(34, 211, 238, 0.34);
+  --row-bg: linear-gradient(90deg, rgba(15, 23, 42, 0.28), rgba(88, 28, 135, 0.14));
+  --row-hover-bg: linear-gradient(90deg, rgba(8, 145, 178, 0.22), rgba(168, 85, 247, 0.2));
+  --rune-name-shadow: rgba(34, 211, 238, 0.42);
+  --badge-muted-bg: rgba(15, 23, 42, 0.68);
+  --badge-cyan-bg: rgba(8, 145, 178, 0.34);
+  --badge-cyan-text: #ecfeff;
+  --badge-purple-bg: rgba(126, 34, 206, 0.44);
+  --badge-pink-bg: rgba(219, 39, 119, 0.46);
+  --badge-gold-bg: rgba(180, 83, 9, 0.4);
+  --badge-gold-border: rgba(251, 191, 36, 0.68);
+  --badge-gold-text: #fff7ed;
+  --effect-bg: rgba(2, 6, 23, 0.58);
+  --text-soft: rgba(207, 250, 254, 0.9);
+  --text-label: #a5f3fc;
+  --text-strong: #fae8ff;
+  --warning-text: #fcd34d;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--app-background);
+}
+
+.neon-app.theme-dark {
+  --app-background:
+    radial-gradient(circle at 18% 8%, rgba(51, 65, 85, 0.34), transparent 26rem),
+    radial-gradient(circle at 82% 18%, rgba(14, 165, 233, 0.12), transparent 24rem),
+    linear-gradient(135deg, #020617 0%, #09090b 48%, #111827 100%);
+  --grid-line-a: rgba(148, 163, 184, 0.045);
+  --grid-line-b: rgba(71, 85, 105, 0.05);
+  --scanline: rgba(148, 163, 184, 0.035);
+  --header-border: rgba(148, 163, 184, 0.34);
+  --header-shadow-a: rgba(51, 65, 85, 0.5);
+  --header-shadow-b: rgba(0, 0, 0, 0.2);
+  --title-glow-a: rgba(148, 163, 184, 0.35);
+  --title-glow-b: rgba(56, 189, 248, 0.16);
+  --subtitle: rgba(203, 213, 225, 0.82);
+  --edge-border: rgba(148, 163, 184, 0.38);
+  --soft-glow: rgba(15, 23, 42, 0.55);
+  --inset-light: rgba(255, 255, 255, 0.035);
+  --chip-primary-bg: linear-gradient(90deg, rgba(30, 41, 59, 0.86), rgba(15, 23, 42, 0.9));
+  --panel-border: rgba(100, 116, 139, 0.38);
+  --panel-bg:
+    linear-gradient(135deg, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.86)),
+    radial-gradient(circle at top left, rgba(71, 85, 105, 0.18), transparent 18rem);
+  --panel-shadow-a: rgba(15, 23, 42, 0.75);
+  --panel-shadow-b: rgba(0, 0, 0, 0.32);
+  --panel-sheen: rgba(148, 163, 184, 0.09);
+  --section-border: rgba(100, 116, 139, 0.42);
+  --section-bg: linear-gradient(90deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.5));
+  --control-border: rgba(100, 116, 139, 0.48);
+  --control-bg: rgba(3, 7, 18, 0.82);
+  --control-shadow-a: rgba(15, 23, 42, 0.28);
+  --control-shadow-b: rgba(0, 0, 0, 0.28);
+  --control-placeholder: rgba(148, 163, 184, 0.72);
+  --control-focus-border: rgba(148, 163, 184, 0.9);
+  --control-focus-bg: rgba(15, 23, 42, 0.95);
+  --control-focus-shadow-a: rgba(148, 163, 184, 0.14);
+  --control-focus-shadow-b: rgba(15, 23, 42, 0.32);
+  --button-border: rgba(100, 116, 139, 0.52);
+  --button-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.88), rgba(15, 23, 42, 0.92));
+  --button-shadow: rgba(0, 0, 0, 0.34);
+  --hover-border: rgba(203, 213, 225, 0.72);
+  --hover-shadow-a: rgba(148, 163, 184, 0.16);
+  --hover-shadow-b: rgba(0, 0, 0, 0.28);
+  --active-button-border: rgba(203, 213, 225, 0.82);
+  --active-button-bg: linear-gradient(135deg, rgba(51, 65, 85, 0.96), rgba(15, 23, 42, 0.98));
+  --alert-border: rgba(248, 113, 113, 0.44);
+  --alert-bg: rgba(69, 10, 10, 0.62);
+  --alert-shadow: rgba(127, 29, 29, 0.18);
+  --alert-text: #fee2e2;
+  --field-label: rgba(203, 213, 225, 0.9);
+  --field-label-shadow: rgba(148, 163, 184, 0.16);
+  --row-bg: linear-gradient(90deg, rgba(2, 6, 23, 0.34), rgba(30, 41, 59, 0.22));
+  --row-hover-bg: linear-gradient(90deg, rgba(30, 41, 59, 0.46), rgba(51, 65, 85, 0.24));
+  --rune-name-shadow: rgba(148, 163, 184, 0.22);
+  --badge-muted-bg: rgba(15, 23, 42, 0.74);
+  --badge-cyan-bg: rgba(30, 41, 59, 0.82);
+  --badge-cyan-text: #e2e8f0;
+  --badge-purple-bg: rgba(51, 65, 85, 0.78);
+  --badge-pink-bg: rgba(63, 63, 70, 0.8);
+  --badge-gold-bg: rgba(68, 64, 60, 0.68);
+  --badge-gold-border: rgba(168, 162, 158, 0.5);
+  --badge-gold-text: #fafaf9;
+  --effect-bg: rgba(3, 7, 18, 0.72);
+  --text-soft: rgba(203, 213, 225, 0.9);
+  --text-label: #cbd5e1;
+  --text-strong: #f8fafc;
+  --warning-text: #fde68a;
 }
 
 .neon-app::before {
@@ -37,8 +167,8 @@ body::selection {
   position: fixed;
   inset: 0;
   background:
-    linear-gradient(rgba(125, 211, 252, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(216, 180, 254, 0.045) 1px, transparent 1px);
+    linear-gradient(var(--grid-line-a) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-b) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(circle at center, black 0%, transparent 78%);
 }
@@ -48,48 +178,46 @@ body::selection {
   content: "";
   position: fixed;
   inset: 0;
-  background: linear-gradient(180deg, transparent, rgba(6, 182, 212, 0.08) 52%, transparent);
+  background: linear-gradient(180deg, transparent, var(--scanline) 52%, transparent);
   mix-blend-mode: screen;
 }
 
 .neon-header {
-  border-bottom: 1px solid rgba(34, 211, 238, 0.38);
-  box-shadow: 0 1px 0 rgba(168, 85, 247, 0.42), 0 18px 42px rgba(6, 182, 212, 0.08);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: 0 1px 0 var(--header-shadow-a), 0 18px 42px var(--header-shadow-b);
 }
 
 .neon-title {
   text-shadow:
-    0 0 10px rgba(34, 211, 238, 0.75),
-    0 0 28px rgba(168, 85, 247, 0.55);
+    0 0 10px var(--title-glow-a),
+    0 0 28px var(--title-glow-b);
 }
 
 .neon-subtitle {
-  color: rgba(207, 250, 254, 0.82);
+  color: var(--subtitle);
 }
 
 .neon-chip,
 .neon-badge,
 .neon-effect-pill {
-  border: 1px solid rgba(125, 211, 252, 0.45);
-  box-shadow: 0 0 18px rgba(34, 211, 238, 0.16), inset 0 0 18px rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--edge-border);
+  box-shadow: 0 0 18px var(--soft-glow), inset 0 0 18px var(--inset-light);
 }
 
 .neon-chip-primary {
   color: #eff6ff;
-  background: linear-gradient(90deg, rgba(14, 165, 233, 0.32), rgba(168, 85, 247, 0.38));
+  background: var(--chip-primary-bg);
 }
 
 .neon-panel,
 .neon-stat,
 .neon-metric {
   position: relative;
-  border: 1px solid rgba(125, 211, 252, 0.34);
-  background:
-    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(30, 16, 62, 0.78)),
-    radial-gradient(circle at top left, rgba(34, 211, 238, 0.13), transparent 18rem);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
   box-shadow:
-    0 0 0 1px rgba(168, 85, 247, 0.18),
-    0 0 28px rgba(34, 211, 238, 0.16),
+    0 0 0 1px var(--panel-shadow-a),
+    0 0 28px var(--panel-shadow-b),
     0 24px 70px rgba(0, 0, 0, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(18px);
@@ -103,31 +231,31 @@ body::selection {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.16), transparent);
+  background: linear-gradient(90deg, transparent, var(--panel-sheen), transparent);
   opacity: 0.55;
 }
 
 .neon-section-title {
-  border-bottom: 1px solid rgba(34, 211, 238, 0.34);
-  background: linear-gradient(90deg, rgba(14, 165, 233, 0.16), rgba(168, 85, 247, 0.14));
+  border-bottom: 1px solid var(--section-border);
+  background: var(--section-bg);
 }
 
 .neon-control {
-  border: 1px solid rgba(125, 211, 252, 0.38);
-  background: rgba(2, 6, 23, 0.72);
-  box-shadow: inset 0 0 20px rgba(14, 165, 233, 0.08), 0 0 20px rgba(168, 85, 247, 0.08);
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
+  box-shadow: inset 0 0 20px var(--control-shadow-a), 0 0 20px var(--control-shadow-b);
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
 }
 
 .neon-control::placeholder {
-  color: rgba(148, 163, 184, 0.82);
+  color: var(--control-placeholder);
 }
 
 .neon-control:focus {
-  border-color: rgba(34, 211, 238, 0.9);
-  background: rgba(15, 23, 42, 0.88);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.13), 0 0 26px rgba(168, 85, 247, 0.22);
+  border-color: var(--control-focus-border);
+  background: var(--control-focus-bg);
+  box-shadow: 0 0 0 3px var(--control-focus-shadow-a), 0 0 26px var(--control-focus-shadow-b);
 }
 
 .neon-button,
@@ -137,17 +265,17 @@ body::selection {
 }
 
 .neon-button {
-  border: 1px solid rgba(125, 211, 252, 0.45);
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(126, 34, 206, 0.4));
-  box-shadow: 0 0 20px rgba(34, 211, 238, 0.18), inset 0 0 18px rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  box-shadow: 0 0 20px var(--button-shadow), inset 0 0 18px rgba(255, 255, 255, 0.05);
 }
 
 .neon-button:hover,
 .neon-icon-button:hover,
 .neon-toggle:hover {
   transform: translateY(-1px);
-  border-color: rgba(34, 211, 238, 0.86);
-  box-shadow: 0 0 28px rgba(34, 211, 238, 0.28), 0 0 18px rgba(168, 85, 247, 0.25);
+  border-color: var(--hover-border);
+  box-shadow: 0 0 28px var(--hover-shadow-a), 0 0 18px var(--hover-shadow-b);
 }
 
 .neon-button:active,
@@ -156,20 +284,20 @@ body::selection {
 }
 
 .neon-button.is-active {
-  border-color: rgba(217, 70, 239, 0.95);
-  background: linear-gradient(135deg, rgba(34, 211, 238, 0.24), rgba(217, 70, 239, 0.5));
+  border-color: var(--active-button-border);
+  background: var(--active-button-bg);
 }
 
 .neon-alert {
-  border: 1px solid rgba(251, 113, 133, 0.55);
-  background: rgba(76, 5, 25, 0.78);
-  box-shadow: 0 0 24px rgba(244, 63, 94, 0.18);
-  color: #ffe4e6;
+  border: 1px solid var(--alert-border);
+  background: var(--alert-bg);
+  box-shadow: 0 0 24px var(--alert-shadow);
+  color: var(--alert-text);
 }
 
 .neon-field-label {
-  color: rgba(165, 243, 252, 0.84);
-  text-shadow: 0 0 14px rgba(34, 211, 238, 0.34);
+  color: var(--field-label);
+  text-shadow: 0 0 14px var(--field-label-shadow);
 }
 
 .neon-stat {
@@ -183,16 +311,16 @@ body::selection {
 }
 
 .neon-row {
-  background: linear-gradient(90deg, rgba(15, 23, 42, 0.28), rgba(88, 28, 135, 0.14));
+  background: var(--row-bg);
 }
 
 .neon-row:hover,
 .neon-row.is-target {
-  background: linear-gradient(90deg, rgba(8, 145, 178, 0.22), rgba(168, 85, 247, 0.2));
+  background: var(--row-hover-bg);
 }
 
 .neon-rune-name {
-  text-shadow: 0 0 16px rgba(34, 211, 238, 0.42);
+  text-shadow: 0 0 16px var(--rune-name-shadow);
 }
 
 .neon-badge {
@@ -207,34 +335,58 @@ body::selection {
 }
 
 .neon-badge-muted {
-  background: rgba(15, 23, 42, 0.68);
+  background: var(--badge-muted-bg);
 }
 
 .neon-badge-cyan {
-  color: #ecfeff;
-  background: rgba(8, 145, 178, 0.34);
+  color: var(--badge-cyan-text);
+  background: var(--badge-cyan-bg);
 }
 
 .neon-badge-purple {
-  background: rgba(126, 34, 206, 0.44);
+  background: var(--badge-purple-bg);
 }
 
 .neon-badge-pink {
-  background: rgba(219, 39, 119, 0.46);
+  background: var(--badge-pink-bg);
 }
 
 .neon-badge-gold {
-  color: #fff7ed;
-  border-color: rgba(251, 191, 36, 0.68);
-  background: rgba(180, 83, 9, 0.4);
+  color: var(--badge-gold-text);
+  border-color: var(--badge-gold-border);
+  background: var(--badge-gold-bg);
 }
 
 .neon-effect-pill {
-  background: rgba(2, 6, 23, 0.58);
+  background: var(--effect-bg);
 }
 
 .neon-metric {
   min-height: 5rem;
+}
+
+.neon-app .text-cyan-100,
+.neon-app .text-cyan-100\/80,
+.neon-app .text-cyan-100\/90 {
+  color: var(--text-soft);
+}
+
+.neon-app .text-cyan-200,
+.neon-app .text-cyan-200\/90,
+.neon-app .text-cyan-300 {
+  color: var(--text-label);
+}
+
+.neon-app .text-fuchsia-100 {
+  color: var(--text-strong);
+}
+
+.neon-app .text-amber-300 {
+  color: var(--warning-text);
+}
+
+.neon-app input[type="checkbox"] {
+  accent-color: var(--field-label);
 }
 
 @media (max-width: 640px) {

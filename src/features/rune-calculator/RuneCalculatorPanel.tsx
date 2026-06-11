@@ -157,7 +157,7 @@ export default function RuneCalculatorPanel({
   const [showSecret, setShowSecret] = useLocalStorage('markCalc_showSecret', false);
   const [hideInstant, setHideInstant] = useLocalStorage('markCalc_hideInstant', false);
   const [sortOrder, setSortOrder] = useLocalStorage<'asc' | 'desc'>('markCalc_sort', 'asc');
-  const [isDarkMode, setIsDarkMode] = useLocalStorage('markCalc_darkMode', false);
+  const [isDarkTheme, setIsDarkTheme] = useLocalStorage('markCalc_darkTheme', false);
   const [copiedText, setCopiedText] = useState('');
 
   const debouncedFilterText = useDebounce(filterText, 150);
@@ -201,8 +201,8 @@ export default function RuneCalculatorPanel({
   const hasValidInputs = markSpeed.value > 0 && markBulk.value > 0 && markLuck.value > 0 && markClone.value > 0 && targetCopies.value > 0;
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDarkMode);
-  }, [isDarkMode]);
+    document.documentElement.classList.toggle('dark', isDarkTheme);
+  }, [isDarkTheme]);
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -215,7 +215,7 @@ export default function RuneCalculatorPanel({
   };
 
   return (
-    <main className={`neon-app min-h-screen ${isDarkMode ? 'dark' : ''} text-white`}>
+    <main className={`neon-app min-h-screen ${isDarkTheme ? 'theme-dark' : 'theme-neon'} text-white`}>
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <header className="neon-header mb-5 flex flex-col gap-4 pb-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -233,10 +233,12 @@ export default function RuneCalculatorPanel({
 
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`${buttonClass} ${isDarkMode ? 'is-active' : ''}`}
+              type="button"
+              onClick={() => setIsDarkTheme(!isDarkTheme)}
+              className={`${buttonClass} ${isDarkTheme ? 'is-active' : ''}`}
+              aria-pressed={isDarkTheme}
             >
-              {isDarkMode ? 'HUD Active' : 'Neon Glow'}
+              {isDarkTheme ? 'Neon Theme' : 'Dark Theme'}
             </button>
             <a
               href="https://www.roblox.com/"
