@@ -3083,6 +3083,73 @@
               "curveExponent": 0.16
             }
           }
+        },
+        {
+          "id": "Covenant",
+          "name": "Covenant",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/217.73Qavg",
+          "cumulativeDenominator": 2.17728e+77,
+          "baseCumulativeChanceAtLuck1": 4.592886537330982e-78,
+          "baseExclusiveDropChanceAtLuck1": 4.592886537330982e-78,
+          "isSecret": false,
+          "isHidden": false,
+          "ignoreMarksBoost": false,
+          "showInBillboard": true,
+          "showInMarksGuiWhenUnowned": true,
+          "costPerBaseOpen": 1000000,
+          "costCurrency": "Ash",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "No per-rollable required amount exists in source; effectCaps/effectCurves define effect scaling caps.",
+          "effects": {
+            "CitizenGainMultiplierPerCopy": 8e-13,
+            "QiMultiplierPerCopy": 1e+67,
+            "FaithGainMultiplierPerCopy": 2.2e-12,
+            "LawsGainMultiplierPerCopy": 1.4e-12,
+            "DiscipleBreakthroughLuckPerCopy": 6e-13,
+            "MarkLuckPerCopy": 2e-13
+          },
+          "effectCaps": {
+            "CitizenGainMultiplierPerCopy": 5,
+            "QiMultiplierPerCopy": 5e+79,
+            "FaithGainMultiplierPerCopy": 12,
+            "LawsGainMultiplierPerCopy": 8,
+            "DiscipleBreakthroughLuckPerCopy": 4,
+            "MarkLuckPerCopy": 2
+          },
+          "effectCurves": {
+            "CitizenGainMultiplierPerCopy": {
+              "maxMultiplier": 5,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            },
+            "QiMultiplierPerCopy": {
+              "maxMultiplier": 5e+79,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            },
+            "FaithGainMultiplierPerCopy": {
+              "maxMultiplier": 12,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            },
+            "LawsGainMultiplierPerCopy": {
+              "maxMultiplier": 8,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            },
+            "DiscipleBreakthroughLuckPerCopy": {
+              "maxMultiplier": 4,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            },
+            "MarkLuckPerCopy": {
+              "maxMultiplier": 2,
+              "hardCapCopies": 5e+12,
+              "curveExponent": 0.21
+            }
+          }
         }
       ]
     },

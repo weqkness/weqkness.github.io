@@ -240,6 +240,32 @@ body::selection {
   background: var(--section-bg);
 }
 
+.neon-tabs {
+  border: 1px solid var(--panel-border);
+  background: var(--control-bg);
+  box-shadow: 0 0 24px var(--panel-shadow-b), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.neon-tab {
+  border: 1px solid transparent;
+  color: var(--text-soft);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.neon-tab:hover {
+  transform: translateY(-1px);
+  border-color: var(--hover-border);
+  color: #ffffff;
+  box-shadow: 0 0 18px var(--hover-shadow-a);
+}
+
+.neon-tab.is-active {
+  border-color: var(--active-button-border);
+  color: #ffffff;
+  background: var(--active-button-bg);
+  box-shadow: 0 0 20px var(--button-shadow), inset 0 0 16px var(--inset-light);
+}
+
 .neon-control {
   border: 1px solid var(--control-border);
   background: var(--control-bg);

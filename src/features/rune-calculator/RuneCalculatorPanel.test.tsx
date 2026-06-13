@@ -149,4 +149,29 @@ describe('RuneCalculatorPanel', () => {
     expect(screen.getAllByText('Dim').length).toBeGreaterThan(0);
     expect(screen.queryByText('Revenge')).not.toBeInTheDocument();
   });
+
+  it('calculates milestone ETA from MPS and milestone levels', async () => {
+    const user = userEvent.setup();
+    render(<RuneCalculatorPanel marksData={testMarksData} scales={testScales} />);
+
+    await user.click(screen.getByRole('button', { name: 'Milestone Calculator' }));
+
+    expect(screen.getByRole('heading', { name: 'Milestone Calculator' })).toBeInTheDocument();
+
+    const mpsInput = screen.getByLabelText(/MPS/);
+    await user.clear(mpsInput);
+    await user.type(mpsInput, '100');
+
+    const currentInput = screen.getByLabelText(/Current Milestone Level/);
+    await user.clear(currentInput);
+    await user.type(currentInput, '1');
+
+    const targetInput = screen.getByLabelText(/Target Milestone Level/);
+    await user.clear(targetInput);
+    await user.type(targetInput, '3');
+
+    expect(screen.getByText('35.52K')).toBeInTheDocument();
+    expect(screen.getByText('5 minutes, 55 seconds')).toBeInTheDocument();
+    expect(screen.getByText('1.331x')).toBeInTheDocument();
+  });
 });

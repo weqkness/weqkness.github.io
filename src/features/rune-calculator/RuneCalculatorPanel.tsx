@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   buildScaleUtils,
+  calculateMilestoneEffect,
+  calculateMilestoneEtaSeconds,
+  calculateMilestoneOpensForTier,
+  calculateMilestoneTotalOpens,
   findNextUnderHour,
   formatNumericValue,
   formatScaled,
+  normalizeMilestoneLevel,
   parseScaled,
   processMarks,
   type ProcessOptions,
@@ -34,6 +39,7 @@ const SparkIcon = () => (
 const panelClass = 'neon-panel rounded-2xl p-4';
 const controlClass = 'neon-control w-full rounded-xl px-3 py-2 text-sm font-bold text-white';
 const buttonClass = 'neon-button rounded-xl px-4 py-2 text-sm font-black text-white';
+type ActiveView = 'runes' | 'milestones';
 
 interface Props {
   marksData: MarksData;
@@ -158,6 +164,7 @@ export default function RuneCalculatorPanel({
   const [hideInstant, setHideInstant] = useLocalStorage('markCalc_hideInstant', false);
   const [sortOrder, setSortOrder] = useLocalStorage<'asc' | 'desc'>('markCalc_sort', 'asc');
   const [isDarkTheme, setIsDarkTheme] = useLocalStorage('markCalc_darkTheme', false);
+  const [activeView, setActiveView] = useLocalStorage<ActiveView>('markCalc_activeView', 'runes');
   const [copiedText, setCopiedText] = useState('');
 
   const debouncedFilterText = useDebounce(filterText, 150);
@@ -224,7 +231,7 @@ export default function RuneCalculatorPanel({
               Immortality Incremental
             </div>
             <h1 className="neon-title text-4xl font-black text-white">
-              Mark Rune Calculator
+              {activeView === 'milestones' ? 'Milestone Calculator' : 'Mark Rune Calculator'}
             </h1>
             <p className="neon-subtitle mt-2 max-w-2xl text-sm font-semibold">
               {marksData.categories.length} categories, {marksData.categories.reduce((total, category) => total + category.rollables.length, 0)} marks. Currency income is ignored by design.
@@ -249,6 +256,27 @@ export default function RuneCalculatorPanel({
           </div>
         </header>
 
+        <nav className="neon-tabs mb-5 flex flex-wrap gap-2 rounded-2xl p-2" aria-label="Calculator views">
+          <button
+            type="button"
+            onClick={() => setActiveView('runes')}
+            className={`neon-tab rounded-xl px-4 py-2 text-sm font-black ${activeView === 'runes' ? 'is-active' : ''}`}
+            aria-pressed={activeView === 'runes'}
+          >
+            Rune Calculator
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('milestones')}
+            className={`neon-tab rounded-xl px-4 py-2 text-sm font-black ${activeView === 'milestones' ? 'is-active' : ''}`}
+            aria-pressed={activeView === 'milestones'}
+          >
+            Milestone Calculator
+          </button>
+        </nav>
+
+        {activeView === 'runes' ? (
+          <>
         <section className={`${panelClass} mb-5`}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             <NumberInput label="Mark Speed" value={markSpeedInput} onChange={setMarkSpeedInput} result={markSpeed} scaleUtils={scaleUtils} copyLabel="speed" onCopy={copyToClipboard} copiedText={copiedText} />
@@ -354,6 +382,14 @@ export default function RuneCalculatorPanel({
             </div>
           )}
         </section>
+          </>
+        ) : (
+          <MilestoneCalculator
+            scaleUtils={scaleUtils}
+            copiedText={copiedText}
+            onCopy={copyToClipboard}
+          />
+        )}
       </div>
     </main>
   );
@@ -427,6 +463,85 @@ function StatTile({ label, value }: { label: string; value: string }) {
       <div className="text-xs font-black uppercase text-cyan-200">{label}</div>
       <div className="mt-2 break-words text-xl font-black text-white">{value}</div>
     </div>
+  );
+}
+
+function formatMultiplier(value: number, scaleUtils: ScaleUtils): string {
+  return Number.isFinite(value) ? `${formatScaled(value, scaleUtils)}x` : 'Too high';
+}
+
+function MilestoneCalculator({
+  scaleUtils,
+  copiedText,
+  onCopy
+}: {
+  scaleUtils: ScaleUtils;
+  copiedText: string;
+  onCopy: (text: string, label: string) => void;
+}) {
+  const [mpsInput, setMpsInput] = useLocalStorage('markCalc_milestoneMps', '1');
+  const [currentLevelInput, setCurrentLevelInput] = useLocalStorage('markCalc_milestoneCurrent', '0');
+  const [targetLevelInput, setTargetLevelInput] = useLocalStorage('markCalc_milestoneTarget', '1');
+
+  const mps = useMemo(() => parseScaled(mpsInput, scaleUtils), [mpsInput, scaleUtils]);
+  const currentLevelResult = useMemo(() => parseScaled(currentLevelInput, scaleUtils), [currentLevelInput, scaleUtils]);
+  const targetLevelResult = useMemo(() => parseScaled(targetLevelInput, scaleUtils), [targetLevelInput, scaleUtils]);
+  const currentLevel = normalizeMilestoneLevel(currentLevelResult.value);
+  const targetLevel = normalizeMilestoneLevel(targetLevelResult.value);
+  const nextLevel = currentLevel + 1;
+  const totalOpens = calculateMilestoneTotalOpens(currentLevel, targetLevel);
+  const etaSeconds = calculateMilestoneEtaSeconds(mps.value, currentLevel, targetLevel);
+  const currentEffect = calculateMilestoneEffect(currentLevel);
+  const targetEffect = calculateMilestoneEffect(targetLevel);
+  const gainedEffect = Number.isFinite(currentEffect) && currentEffect > 0
+    ? targetEffect / currentEffect
+    : Infinity;
+  const nextTierOpens = calculateMilestoneOpensForTier(nextLevel);
+  const hasValidMps = mps.value > 0;
+  const hasForwardTarget = targetLevel > currentLevel;
+
+  return (
+    <>
+      <section className={`${panelClass} mb-5`}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <NumberInput label="MPS" value={mpsInput} onChange={setMpsInput} result={mps} scaleUtils={scaleUtils} copyLabel="milestone-mps" onCopy={onCopy} copiedText={copiedText} />
+          <NumberInput label="Current Milestone Level" value={currentLevelInput} onChange={setCurrentLevelInput} result={currentLevelResult} scaleUtils={scaleUtils} copyLabel="milestone-current" onCopy={onCopy} copiedText={copiedText} />
+          <NumberInput label="Target Milestone Level" value={targetLevelInput} onChange={setTargetLevelInput} result={targetLevelResult} scaleUtils={scaleUtils} copyLabel="milestone-target" onCopy={onCopy} copiedText={copiedText} />
+        </div>
+
+        {!hasValidMps && (
+          <div className="neon-alert mt-4 rounded-xl px-4 py-3 text-sm font-bold">
+            MPS must be greater than 0 to calculate an ETA.
+          </div>
+        )}
+
+        {!hasForwardTarget && (
+          <div className="neon-alert mt-4 rounded-xl px-4 py-3 text-sm font-bold">
+            Target Milestone Level must be higher than Current Milestone Level.
+          </div>
+        )}
+      </section>
+
+      <section className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <Metric label="Opens needed" value={formatScaled(totalOpens, scaleUtils)} />
+        <Metric label="ETA" value={formatTimeHuman(etaSeconds)} strong />
+        <Metric label="ETA seconds" value={Number.isFinite(etaSeconds) ? formatScaled(etaSeconds, scaleUtils) : 'Never'} />
+        <Metric label="Current Mark Bulk buff" value={formatMultiplier(currentEffect, scaleUtils)} />
+        <Metric label="Target Mark Bulk buff" value={formatMultiplier(targetEffect, scaleUtils)} strong />
+        <Metric label="Buff gained" value={formatMultiplier(gainedEffect, scaleUtils)} />
+      </section>
+
+      <section className="neon-panel overflow-hidden rounded-2xl">
+        <div className="neon-section-title px-4 py-3">
+          <h2 className="text-lg font-black text-white">Milestone Rules</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
+          <Metric label={`Level ${nextLevel} opens`} value={formatScaled(nextTierOpens, scaleUtils)} />
+          <Metric label="Open scaling" value="10000 * 1.45^(tier - 1)" />
+          <Metric label="Mark Bulk buff" value="1.1^tier" />
+        </div>
+      </section>
+    </>
   );
 }
 

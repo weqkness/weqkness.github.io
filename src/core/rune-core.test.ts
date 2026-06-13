@@ -4,8 +4,13 @@ import {
   buildScaleUtils,
   calculateMarkEstimate,
   calculateMarksPerSecond,
+  calculateMilestoneEffect,
+  calculateMilestoneEtaSeconds,
+  calculateMilestoneOpensForTier,
+  calculateMilestoneTotalOpens,
   findNextUnderHour,
   formatScaled,
+  normalizeMilestoneLevel,
   parseScaled,
   processMarks
 } from './rune-core';
@@ -242,5 +247,36 @@ describe('findNextUnderHour', () => {
   it('returns null if no visible mark fits the window', () => {
     const processed = processMarks([testCategory], 1e9, 1, 1, 1, 1);
     expect(findNextUnderHour(processed)).toBeNull();
+  });
+});
+
+describe('milestone math', () => {
+  it('normalizes milestone levels to completed integer levels', () => {
+    expect(normalizeMilestoneLevel(-1)).toBe(0);
+    expect(normalizeMilestoneLevel(2.9)).toBe(2);
+    expect(normalizeMilestoneLevel(Number.NaN)).toBe(0);
+  });
+
+  it('calculates per-tier opens with 1.45x scaling rounded to nearest integer', () => {
+    expect(calculateMilestoneOpensForTier(1)).toBe(10000);
+    expect(calculateMilestoneOpensForTier(2)).toBe(14500);
+    expect(calculateMilestoneOpensForTier(3)).toBe(21025);
+  });
+
+  it('sums opens from current milestone to target milestone', () => {
+    expect(calculateMilestoneTotalOpens(0, 3)).toBe(45525);
+    expect(calculateMilestoneTotalOpens(1, 3)).toBe(35525);
+    expect(calculateMilestoneTotalOpens(3, 3)).toBe(0);
+  });
+
+  it('calculates ETA from player MPS', () => {
+    expect(calculateMilestoneEtaSeconds(100, 1, 3)).toBeCloseTo(355.25);
+    expect(calculateMilestoneEtaSeconds(0, 1, 3)).toBe(Infinity);
+    expect(calculateMilestoneEtaSeconds(100, 3, 3)).toBe(0);
+  });
+
+  it('calculates Mark Bulk milestone effect as 1.1^tier', () => {
+    expect(calculateMilestoneEffect(0)).toBe(1);
+    expect(calculateMilestoneEffect(3)).toBeCloseTo(1.331);
   });
 });

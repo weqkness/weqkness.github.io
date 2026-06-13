@@ -483,3 +483,60 @@ export function findNextUnderHour(processed: ProcessedMark[]): string | null {
 
   return candidate?.id ?? null;
 }
+
+export function normalizeMilestoneLevel(level: number): number {
+  if (!Number.isFinite(level) || level <= 0) {
+    return 0;
+  }
+
+  return Math.floor(level);
+}
+
+export function calculateMilestoneOpensForTier(tier: number): number {
+  const normalizedTier = normalizeMilestoneLevel(tier);
+
+  if (normalizedTier <= 0) {
+    return 0;
+  }
+
+  return Math.round(10000 * 1.45 ** (normalizedTier - 1));
+}
+
+export function calculateMilestoneTotalOpens(currentLevel: number, targetLevel: number): number {
+  const current = normalizeMilestoneLevel(currentLevel);
+  const target = normalizeMilestoneLevel(targetLevel);
+
+  if (target <= current) {
+    return 0;
+  }
+
+  let total = 0;
+  for (let tier = current + 1; tier <= target; tier += 1) {
+    total += calculateMilestoneOpensForTier(tier);
+  }
+
+  return total;
+}
+
+export function calculateMilestoneEffect(level: number): number {
+  const normalizedLevel = normalizeMilestoneLevel(level);
+  return 1.1 ** normalizedLevel;
+}
+
+export function calculateMilestoneEtaSeconds(
+  marksPerSecond: number,
+  currentLevel: number,
+  targetLevel: number
+): number {
+  const totalOpens = calculateMilestoneTotalOpens(currentLevel, targetLevel);
+
+  if (totalOpens <= 0) {
+    return 0;
+  }
+
+  if (marksPerSecond <= 0 || !Number.isFinite(marksPerSecond)) {
+    return Infinity;
+  }
+
+  return totalOpens / marksPerSecond;
+}
