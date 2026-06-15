@@ -591,6 +591,39 @@
             "MarkBulkPerCopy": 5,
             "MarkSpeedPerCopy": 4
           }
+        },
+        {
+          "id": "Sanguine",
+          "name": "Sanguine",
+          "tier": 9,
+          "gradientId": "9",
+          "rarityText": "1/6.22Ocvg",
+          "cumulativeDenominator": 6.22e+87,
+          "baseCumulativeChanceAtLuck1": 1.607717041800643e-88,
+          "baseExclusiveDropChanceAtLuck1": 1.607717041800643e-88,
+          "isSecret": true,
+          "isHidden": true,
+          "ignoreMarksBoost": false,
+          "showInBillboard": false,
+          "showInMarksGuiWhenUnowned": false,
+          "costPerBaseOpen": 100000000,
+          "costCurrency": "Essence",
+          "requiredAmount": null,
+          "requiredAmountSourceNote": "Added from developer-provided maxed stats. Maxes at 25,000 copies; per-copy values are maxed stat divided by 25,000.",
+          "effects": {
+            "QiMultiplierPerCopy": 9e+79,
+            "DiscipleBreakthroughLuckPerCopy": 0.00175,
+            "CitizenGainMultiplierPerCopy": 0.01345,
+            "DivinityGainMultiplierPerCopy": 0.0022,
+            "KarmaGainMultiplierPerCopy": 49.6
+          },
+          "effectCaps": {
+            "QiMultiplierPerCopy": 25000,
+            "DiscipleBreakthroughLuckPerCopy": 25000,
+            "CitizenGainMultiplierPerCopy": 25000,
+            "DivinityGainMultiplierPerCopy": 25000,
+            "KarmaGainMultiplierPerCopy": 25000
+          }
         }
       ]
     },
