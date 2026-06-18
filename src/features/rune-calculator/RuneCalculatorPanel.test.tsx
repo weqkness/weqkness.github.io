@@ -174,4 +174,23 @@ describe('RuneCalculatorPanel', () => {
     expect(screen.getByText('5 minutes, 55 seconds')).toBeInTheDocument();
     expect(screen.getByText('1.331x')).toBeInTheDocument();
   });
+
+  it('calculates material ETA from target amount', async () => {
+    const user = userEvent.setup();
+    render(<RuneCalculatorPanel marksData={testMarksData} scales={testScales} />);
+
+    await user.click(screen.getByRole('button', { name: 'Materials' }));
+
+    expect(screen.getByRole('heading', { name: 'Materials', level: 1 })).toBeInTheDocument();
+    expect(screen.getByText(/estimate-based/)).toBeInTheDocument();
+
+    const targetInput = screen.getByLabelText(/Target Materials/);
+    await user.clear(targetInput);
+    await user.type(targetInput, '10');
+
+    expect(screen.getByText('Lucent')).toBeInTheDocument();
+    expect(screen.getByText('Grace')).toBeInTheDocument();
+    expect(screen.getAllByText('4 minutes, 45 seconds').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('19 minutes, 36 seconds').length).toBeGreaterThan(0);
+  });
 });

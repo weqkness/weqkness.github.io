@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   buildScaleUtils,
+  calculateMaterialEstimate,
   calculateMilestoneEffect,
   calculateMilestoneEtaSeconds,
   calculateMilestoneOpensForTier,
@@ -39,7 +40,21 @@ const SparkIcon = () => (
 const panelClass = 'neon-panel rounded-2xl p-4';
 const controlClass = 'neon-control w-full rounded-xl px-3 py-2 text-sm font-bold text-white';
 const buttonClass = 'neon-button rounded-xl px-4 py-2 text-sm font-black text-white';
-type ActiveView = 'runes' | 'milestones';
+type ActiveView = 'runes' | 'milestones' | 'materials';
+
+const MATERIALS = [
+  { mark: 'Insight', material: 'Lucent', chancePerSecond: 0.035 },
+  { mark: 'Essence', material: 'Ichor', chancePerSecond: 0.031 },
+  { mark: 'Soulfire', material: 'Cindral', chancePerSecond: 0.027 },
+  { mark: 'Karma', material: 'Kismet', chancePerSecond: 0.0235 },
+  { mark: 'Stars', material: 'Aster', chancePerSecond: 0.0205 },
+  { mark: 'Nebulae', material: 'Aeon', chancePerSecond: 0.018 },
+  { mark: 'Quasar', material: 'Solace', chancePerSecond: 0.0155 },
+  { mark: 'Miasma', material: 'Morrow', chancePerSecond: 0.0135 },
+  { mark: 'Ash', material: 'Sable', chancePerSecond: 0.0115 },
+  { mark: 'Laws', material: 'Axiom', chancePerSecond: 0.01 },
+  { mark: 'Faith', material: 'Grace', chancePerSecond: 0.0085 }
+] as const;
 
 interface Props {
   marksData: MarksData;
@@ -231,7 +246,7 @@ export default function RuneCalculatorPanel({
               Immortality Incremental
             </div>
             <h1 className="neon-title text-4xl font-black text-white">
-              {activeView === 'milestones' ? 'Milestone Calculator' : 'Mark Rune Calculator'}
+              {activeView === 'milestones' ? 'Milestone Calculator' : activeView === 'materials' ? 'Materials' : 'Mark Rune Calculator'}
             </h1>
             <p className="neon-subtitle mt-2 max-w-2xl text-sm font-semibold">
               {marksData.categories.length} categories, {marksData.categories.reduce((total, category) => total + category.rollables.length, 0)} marks. Currency income is ignored by design.
@@ -272,6 +287,14 @@ export default function RuneCalculatorPanel({
             aria-pressed={activeView === 'milestones'}
           >
             Milestone Calculator
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('materials')}
+            className={`neon-tab rounded-xl px-4 py-2 text-sm font-black ${activeView === 'materials' ? 'is-active' : ''}`}
+            aria-pressed={activeView === 'materials'}
+          >
+            Materials
           </button>
         </nav>
 
@@ -383,8 +406,14 @@ export default function RuneCalculatorPanel({
           )}
         </section>
           </>
-        ) : (
+        ) : activeView === 'milestones' ? (
           <MilestoneCalculator
+            scaleUtils={scaleUtils}
+            copiedText={copiedText}
+            onCopy={copyToClipboard}
+          />
+        ) : (
+          <MaterialsCalculator
             scaleUtils={scaleUtils}
             copiedText={copiedText}
             onCopy={copyToClipboard}
@@ -539,6 +568,91 @@ function MilestoneCalculator({
           <Metric label={`Level ${nextLevel} opens`} value={formatScaled(nextTierOpens, scaleUtils)} />
           <Metric label="Open scaling" value="10000 * 1.45^(tier - 1)" />
           <Metric label="Mark Bulk buff" value="1.1^tier" />
+        </div>
+      </section>
+    </>
+  );
+}
+
+function MaterialsCalculator({
+  scaleUtils,
+  copiedText,
+  onCopy
+}: {
+  scaleUtils: ScaleUtils;
+  copiedText: string;
+  onCopy: (text: string, label: string) => void;
+}) {
+  const [targetAmountInput, setTargetAmountInput] = useLocalStorage('markCalc_materialTarget', '1');
+  const targetAmount = useMemo(() => parseScaled(targetAmountInput, scaleUtils), [targetAmountInput, scaleUtils]);
+  const safeTargetAmount = positiveInput(targetAmount.value);
+
+  const materialRows = useMemo(() => MATERIALS.map(material => ({
+    ...material,
+    estimate: calculateMaterialEstimate(material.chancePerSecond, safeTargetAmount)
+  })), [safeTargetAmount]);
+
+  const fastest = materialRows[0];
+  const slowest = materialRows[materialRows.length - 1];
+
+  return (
+    <>
+      <section className={`${panelClass} mb-5`}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+          <NumberInput
+            label="Target Materials"
+            value={targetAmountInput}
+            onChange={setTargetAmountInput}
+            result={targetAmount}
+            scaleUtils={scaleUtils}
+            copyLabel="material-target"
+            onCopy={onCopy}
+            copiedText={copiedText}
+          />
+          <div className="neon-alert rounded-xl px-4 py-3 text-sm font-bold">
+            Materials are estimate-based. ETA is the average expected time, not a guarantee; real drops can be higher or lower than the amount entered.
+          </div>
+        </div>
+      </section>
+
+      <section className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <Metric label="Target amount" value={formatScaled(safeTargetAmount, scaleUtils)} />
+        <Metric label={`Fastest (${fastest.material})`} value={formatTimeHuman(fastest.estimate.expectedSeconds)} strong />
+        <Metric label={`Slowest (${slowest.material})`} value={formatTimeHuman(slowest.estimate.expectedSeconds)} />
+      </section>
+
+      <section className="neon-panel overflow-hidden rounded-2xl">
+        <div className="neon-section-title px-4 py-3">
+          <h2 className="text-lg font-black text-white">Materials</h2>
+        </div>
+        <div className="divide-y divide-cyan-300/10">
+          {materialRows.map(material => (
+            <article key={material.material} className="neon-row px-4 py-4 transition-colors">
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="neon-rune-name text-lg font-black text-white">{material.material}</h3>
+                    <span className="neon-badge neon-badge-muted">Mark of {material.mark}</span>
+                    <span className="neon-badge neon-badge-cyan">{(material.chancePerSecond * 100).toFixed(2)}% / sec</span>
+                    <span className="neon-badge neon-badge-purple">Avg {formatTimeHuman(1 / material.chancePerSecond)}</span>
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-cyan-100/80">
+                    Open Mark of {material.mark} for estimated {material.material} drops.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <Metric label="Expected ETA" value={formatTimeHuman(material.estimate.expectedSeconds)} strong />
+                  <Metric
+                    label="ETA seconds"
+                    value={Number.isFinite(material.estimate.expectedSeconds) ? formatScaled(material.estimate.expectedSeconds, scaleUtils) : 'Never'}
+                  />
+                  <Metric label="Expected/hour" value={formatScaled(material.estimate.expectedPerHour, scaleUtils)} />
+                  <Metric label="Target" value={formatScaled(safeTargetAmount, scaleUtils)} />
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
     </>

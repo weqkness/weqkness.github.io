@@ -4,6 +4,7 @@ import {
   buildScaleUtils,
   calculateMarkEstimate,
   calculateMarksPerSecond,
+  calculateMaterialEstimate,
   calculateMilestoneEffect,
   calculateMilestoneEtaSeconds,
   calculateMilestoneOpensForTier,
@@ -278,5 +279,19 @@ describe('milestone math', () => {
   it('calculates Mark Bulk milestone effect as 1.1^tier', () => {
     expect(calculateMilestoneEffect(0)).toBe(1);
     expect(calculateMilestoneEffect(3)).toBeCloseTo(1.331);
+  });
+});
+
+describe('material math', () => {
+  it('calculates expected material ETA from chance per second and target amount', () => {
+    const estimate = calculateMaterialEstimate(0.035, 10);
+
+    expect(estimate.expectedSeconds).toBeCloseTo(285.714);
+    expect(estimate.expectedPerHour).toBeCloseTo(126);
+  });
+
+  it('returns never for invalid material inputs', () => {
+    expect(calculateMaterialEstimate(0, 10).expectedSeconds).toBe(Infinity);
+    expect(calculateMaterialEstimate(0.01, 0).expectedSeconds).toBe(Infinity);
   });
 });

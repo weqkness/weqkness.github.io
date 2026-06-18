@@ -540,3 +540,27 @@ export function calculateMilestoneEtaSeconds(
 
   return totalOpens / marksPerSecond;
 }
+
+export interface MaterialEstimate {
+  expectedSeconds: number;
+  expectedPerHour: number;
+}
+
+export function calculateMaterialEstimate(chancePerSecond: number, targetAmount: number): MaterialEstimate {
+  if (
+    chancePerSecond <= 0 ||
+    targetAmount <= 0 ||
+    !Number.isFinite(chancePerSecond) ||
+    !Number.isFinite(targetAmount)
+  ) {
+    return {
+      expectedSeconds: Infinity,
+      expectedPerHour: 0
+    };
+  }
+
+  return {
+    expectedSeconds: targetAmount / chancePerSecond,
+    expectedPerHour: chancePerSecond * 3600
+  };
+}
