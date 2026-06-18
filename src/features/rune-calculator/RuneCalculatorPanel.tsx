@@ -6,15 +6,20 @@ import {
   calculateMilestoneEtaSeconds,
   calculateMilestoneOpensForTier,
   calculateMilestoneTotalOpens,
+  calculateSynthesisBuffValue,
+  calculateSynthesisTotals,
   findNextUnderHour,
   formatNumericValue,
   formatScaled,
+  getSynthesisMaterials,
   normalizeMilestoneLevel,
   parseScaled,
   processMarks,
   type ProcessOptions,
   type ProcessedMark,
-  type ScaleUtils
+  type ScaleUtils,
+  type SynthesisBuff,
+  type SynthesisLaw
 } from '../../core/rune-core';
 import { formatTimeHuman } from '../../lib/formatters';
 import type { MarksData, Scales } from '../../types';
@@ -40,7 +45,7 @@ const SparkIcon = () => (
 const panelClass = 'neon-panel rounded-2xl p-4';
 const controlClass = 'neon-control w-full rounded-xl px-3 py-2 text-sm font-bold text-white';
 const buttonClass = 'neon-button rounded-xl px-4 py-2 text-sm font-black text-white';
-type ActiveView = 'runes' | 'milestones' | 'materials';
+type ActiveView = 'runes' | 'milestones' | 'materials' | 'synthetization';
 
 const MATERIALS = [
   { mark: 'Insight', material: 'Lucent', chancePerSecond: 0.035 },
@@ -55,6 +60,91 @@ const MATERIALS = [
   { mark: 'Laws', material: 'Axiom', chancePerSecond: 0.01 },
   { mark: 'Faith', material: 'Grace', chancePerSecond: 0.0085 }
 ] as const;
+
+const LESSER_MATERIALS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+const LESSER_CORES = [25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 225000, 250000];
+const GREATER_MATERIALS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const GREATER_CORES = [50000, 100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000];
+const ORIGIN_MATERIALS = [15, 30, 45, 60, 75, 90, 105, 120, 135, 150];
+const ORIGIN_CORES = [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000];
+
+const SYNTHESIS_LAWS: SynthesisLaw[] = [
+  {
+    name: 'Lesser Law of Perception',
+    category: 'Lesser',
+    buffs: [{ stat: 'Citizens', multiplier: 1.6, perLevel: true }],
+    requirements: { material: 'Lucent', materialPerLevel: LESSER_MATERIALS, coresPerLevel: LESSER_CORES }
+  },
+  {
+    name: 'Lesser Law of Illusion',
+    category: 'Lesser',
+    buffs: [{ stat: 'Divinity', multiplier: 1.6, perLevel: true }],
+    requirements: { material: 'Ichor', materialPerLevel: LESSER_MATERIALS, coresPerLevel: LESSER_CORES }
+  },
+  {
+    name: 'Lesser Law of Anima',
+    category: 'Lesser',
+    buffs: [{ stat: 'Qi', multiplier: 4096, perLevel: true }],
+    requirements: { material: 'Cindral', materialPerLevel: LESSER_MATERIALS, coresPerLevel: LESSER_CORES }
+  },
+  {
+    name: 'Greater Law of Alacrity',
+    category: 'Greater',
+    buffs: [
+      { stat: 'Citizens', multiplier: 1.8, perLevel: true },
+      { stat: 'Divinity', multiplier: 1.8, perLevel: true }
+    ],
+    requirements: { materials: ['Kismet', 'Morrow'], materialPerLevel: GREATER_MATERIALS, coresPerLevel: GREATER_CORES }
+  },
+  {
+    name: 'Greater Law of Strength',
+    category: 'Greater',
+    buffs: [
+      { stat: 'Qi', multiplier: 2048, perLevel: true },
+      { stat: 'Beast Remnants', multiplier: 1.4, perLevel: true }
+    ],
+    requirements: { materials: ['Aster', 'Sable'], materialPerLevel: GREATER_MATERIALS, coresPerLevel: GREATER_CORES }
+  },
+  {
+    name: 'Greater Law of Darkness',
+    category: 'Greater',
+    buffs: [
+      { stat: 'Manual', multiplier: 1.1, perLevel: true },
+      { stat: 'Disciple Luck', multiplier: 1.6, perLevel: true }
+    ],
+    requirements: { materials: ['Aeon', 'Axiom'], materialPerLevel: GREATER_MATERIALS, coresPerLevel: GREATER_CORES }
+  },
+  {
+    name: 'Origin Law of Time',
+    category: 'Origin',
+    buffs: [
+      { stat: 'Qi', multiplier: 8192, perLevel: true },
+      { stat: 'Breakthrough Cost', multiplier: 0.9, perLevel: true },
+      { stat: 'Citizens', multiplier: 1.4, perLevel: true }
+    ],
+    requirements: { materials: ['Solace', 'Grace'], materialPerLevel: ORIGIN_MATERIALS, coresPerLevel: ORIGIN_CORES }
+  },
+  {
+    name: 'Origin Law of Life',
+    category: 'Origin',
+    buffs: [
+      { stat: 'Beast Damage', multiplier: 1.4, perLevel: true },
+      { stat: 'Disciple Luck', multiplier: 2, perLevel: true },
+      { stat: 'Citizens', multiplier: 1.7, perLevel: true }
+    ],
+    requirements: { materials: ['Cindral', 'Morrow'], materialPerLevel: ORIGIN_MATERIALS, coresPerLevel: ORIGIN_CORES }
+  },
+  {
+    name: 'Origin Law of Death',
+    category: 'Origin',
+    buffs: [
+      { stat: 'Divinity', multiplier: 2, perLevel: true },
+      { stat: 'Citizens', multiplier: 2, perLevel: true },
+      { stat: 'Qi', multiplier: 8192, perLevel: true }
+    ],
+    requirements: { materials: ['Grace', 'Axiom'], materialPerLevel: ORIGIN_MATERIALS, coresPerLevel: ORIGIN_CORES }
+  }
+];
 
 interface Props {
   marksData: MarksData;
@@ -246,7 +336,7 @@ export default function RuneCalculatorPanel({
               Immortality Incremental
             </div>
             <h1 className="neon-title text-4xl font-black text-white">
-              {activeView === 'milestones' ? 'Milestone Calculator' : activeView === 'materials' ? 'Materials' : 'Mark Rune Calculator'}
+              {activeView === 'milestones' ? 'Milestone Calculator' : activeView === 'materials' ? 'Materials' : activeView === 'synthetization' ? 'Synthetization' : 'Mark Rune Calculator'}
             </h1>
             <p className="neon-subtitle mt-2 max-w-2xl text-sm font-semibold">
               {marksData.categories.length} categories, {marksData.categories.reduce((total, category) => total + category.rollables.length, 0)} marks. Currency income is ignored by design.
@@ -295,6 +385,14 @@ export default function RuneCalculatorPanel({
             aria-pressed={activeView === 'materials'}
           >
             Materials
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveView('synthetization')}
+            className={`neon-tab rounded-xl px-4 py-2 text-sm font-black ${activeView === 'synthetization' ? 'is-active' : ''}`}
+            aria-pressed={activeView === 'synthetization'}
+          >
+            Synthetization
           </button>
         </nav>
 
@@ -412,8 +510,14 @@ export default function RuneCalculatorPanel({
             copiedText={copiedText}
             onCopy={copyToClipboard}
           />
-        ) : (
+        ) : activeView === 'materials' ? (
           <MaterialsCalculator
+            scaleUtils={scaleUtils}
+            copiedText={copiedText}
+            onCopy={copyToClipboard}
+          />
+        ) : (
+          <SynthetizationCalculator
             scaleUtils={scaleUtils}
             copiedText={copiedText}
             onCopy={copyToClipboard}
@@ -653,6 +757,140 @@ function MaterialsCalculator({
               </div>
             </article>
           ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function formatMaterialMap(materials: Record<string, number>, scaleUtils: ScaleUtils): string {
+  const entries = Object.entries(materials);
+
+  if (entries.length === 0) {
+    return 'None';
+  }
+
+  return entries.map(([material, amount]) => `${formatScaled(amount, scaleUtils)} ${material}`).join(' + ');
+}
+
+function formatBuffValue(buff: SynthesisBuff, level: number, scaleUtils: ScaleUtils): string {
+  return `${buff.stat} ${formatMultiplier(calculateSynthesisBuffValue(buff, level), scaleUtils)}`;
+}
+
+function formatBuffList(buffs: SynthesisBuff[], level: number, scaleUtils: ScaleUtils): string {
+  return buffs.map(buff => formatBuffValue(buff, level, scaleUtils)).join(' | ');
+}
+
+function SynthetizationCalculator({
+  scaleUtils,
+  copiedText,
+  onCopy
+}: {
+  scaleUtils: ScaleUtils;
+  copiedText: string;
+  onCopy: (text: string, label: string) => void;
+}) {
+  const [lawName, setLawName] = useLocalStorage('markCalc_synthesisLaw', SYNTHESIS_LAWS[0].name);
+  const [currentLevelInput, setCurrentLevelInput] = useLocalStorage('markCalc_synthesisCurrent', '0');
+  const [targetLevelInput, setTargetLevelInput] = useLocalStorage('markCalc_synthesisTarget', '10');
+
+  const selectedLaw = SYNTHESIS_LAWS.find(law => law.name === lawName) ?? SYNTHESIS_LAWS[0];
+  const currentLevelResult = useMemo(() => parseScaled(currentLevelInput, scaleUtils), [currentLevelInput, scaleUtils]);
+  const targetLevelResult = useMemo(() => parseScaled(targetLevelInput, scaleUtils), [targetLevelInput, scaleUtils]);
+  const totals = calculateSynthesisTotals(selectedLaw, currentLevelResult.value, targetLevelResult.value);
+  const maxLevel = Math.min(selectedLaw.requirements.materialPerLevel.length, selectedLaw.requirements.coresPerLevel.length);
+  const currentBuffs = formatBuffList(selectedLaw.buffs, totals.currentLevel, scaleUtils);
+  const targetBuffs = formatBuffList(selectedLaw.buffs, totals.targetLevel, scaleUtils);
+  const gainedBuffs = selectedLaw.buffs
+    .map(buff => `${buff.stat} ${formatMultiplier(calculateSynthesisBuffValue(buff, totals.targetLevel - totals.currentLevel), scaleUtils)}`)
+    .join(' | ');
+  const materials = getSynthesisMaterials(selectedLaw);
+  const hasForwardTarget = totals.targetLevel > totals.currentLevel;
+
+  return (
+    <>
+      <section className={`${panelClass} mb-5`}>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)_minmax(0,0.85fr)]">
+          <Field label="Law">
+            <select value={selectedLaw.name} onChange={event => setLawName(event.target.value)} className={controlClass}>
+              {SYNTHESIS_LAWS.map(law => (
+                <option key={law.name} value={law.name}>{law.name}</option>
+              ))}
+            </select>
+          </Field>
+          <NumberInput
+            label="Current Level"
+            value={currentLevelInput}
+            onChange={setCurrentLevelInput}
+            result={currentLevelResult}
+            scaleUtils={scaleUtils}
+            copyLabel="synthesis-current"
+            onCopy={onCopy}
+            copiedText={copiedText}
+          />
+          <NumberInput
+            label="Target Level"
+            value={targetLevelInput}
+            onChange={setTargetLevelInput}
+            result={targetLevelResult}
+            scaleUtils={scaleUtils}
+            copyLabel="synthesis-target"
+            onCopy={onCopy}
+            copiedText={copiedText}
+          />
+        </div>
+
+        {!hasForwardTarget && (
+          <div className="neon-alert mt-4 rounded-xl px-4 py-3 text-sm font-bold">
+            Target Level must be higher than Current Level. Levels are clamped from 0 to {maxLevel}.
+          </div>
+        )}
+      </section>
+
+      <section className="mb-5 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Metric label="Category" value={selectedLaw.category} />
+        <Metric label="Greater Beast Cores" value={formatScaled(totals.totalCores, scaleUtils)} strong />
+        <Metric label="Materials needed" value={formatMaterialMap(totals.totalMaterials, scaleUtils)} strong />
+        <Metric label="Levels" value={`${totals.currentLevel} -> ${totals.targetLevel} / ${maxLevel}`} />
+      </section>
+
+      <section className="mb-5 grid grid-cols-1 gap-3 xl:grid-cols-3">
+        <Metric label="Current buffs" value={currentBuffs} />
+        <Metric label="Target buffs" value={targetBuffs} strong />
+        <Metric label="Buff gained" value={gainedBuffs} />
+      </section>
+
+      <section className="neon-panel mb-5 overflow-hidden rounded-2xl">
+        <div className="neon-section-title px-4 py-3">
+          <h2 className="text-lg font-black text-white">{selectedLaw.name}</h2>
+        </div>
+        <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-3">
+          <Metric label="Materials used" value={materials.join(' + ')} />
+          <Metric label="Max cores" value={formatScaled(calculateSynthesisTotals(selectedLaw, 0, maxLevel).totalCores, scaleUtils)} />
+          <Metric label="Max materials" value={formatMaterialMap(calculateSynthesisTotals(selectedLaw, 0, maxLevel).totalMaterials, scaleUtils)} />
+        </div>
+      </section>
+
+      <section className="neon-panel overflow-hidden rounded-2xl">
+        <div className="neon-section-title px-4 py-3">
+          <h2 className="text-lg font-black text-white">Level Breakdown</h2>
+        </div>
+        <div className="divide-y divide-cyan-300/10">
+          {Array.from({ length: maxLevel }, (_, index) => {
+            const level = index + 1;
+            const levelMaterials = Object.fromEntries(materials.map(material => [material, selectedLaw.requirements.materialPerLevel[index] ?? 0]));
+
+            return (
+              <article key={level} className={`neon-row px-4 py-4 ${level > totals.currentLevel && level <= totals.targetLevel ? 'is-target' : ''}`}>
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[120px_minmax(0,0.8fr)_minmax(0,0.9fr)_minmax(0,1.4fr)]">
+                  <Metric label="Level" value={level.toString()} strong={level === totals.targetLevel} />
+                  <Metric label="Greater Beast Cores" value={formatScaled(selectedLaw.requirements.coresPerLevel[index] ?? 0, scaleUtils)} />
+                  <Metric label="Materials" value={formatMaterialMap(levelMaterials, scaleUtils)} />
+                  <Metric label="Buffs at level" value={formatBuffList(selectedLaw.buffs, level, scaleUtils)} strong={level === totals.targetLevel} />
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </>

@@ -564,3 +564,90 @@ export function calculateMaterialEstimate(chancePerSecond: number, targetAmount:
     expectedPerHour: chancePerSecond * 3600
   };
 }
+
+export interface SynthesisBuff {
+  stat: string;
+  multiplier: number;
+  perLevel: boolean;
+}
+
+export interface SynthesisRequirements {
+  material?: string;
+  materials?: string[];
+  materialPerLevel: number[];
+  coresPerLevel: number[];
+}
+
+export interface SynthesisLaw {
+  name: string;
+  category: 'Lesser' | 'Greater' | 'Origin';
+  buffs: SynthesisBuff[];
+  requirements: SynthesisRequirements;
+}
+
+export interface SynthesisTotals {
+  currentLevel: number;
+  targetLevel: number;
+  totalCores: number;
+  totalMaterials: Record<string, number>;
+}
+
+export function getSynthesisMaterials(law: SynthesisLaw): string[] {
+  if (law.requirements.materials?.length) {
+    return law.requirements.materials;
+  }
+
+  return law.requirements.material ? [law.requirements.material] : [];
+}
+
+export function normalizeSynthesisLevel(level: number, maxLevel = 10): number {
+  if (!Number.isFinite(level) || level <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.floor(level), maxLevel);
+}
+
+export function calculateSynthesisBuffValue(buff: SynthesisBuff, level: number): number {
+  const normalizedLevel = normalizeSynthesisLevel(level);
+  return buff.perLevel ? buff.multiplier ** normalizedLevel : buff.multiplier;
+}
+
+export function calculateSynthesisTotals(
+  law: SynthesisLaw,
+  currentLevel: number,
+  targetLevel: number
+): SynthesisTotals {
+  const maxLevel = Math.min(law.requirements.materialPerLevel.length, law.requirements.coresPerLevel.length);
+  const current = normalizeSynthesisLevel(currentLevel, maxLevel);
+  const target = normalizeSynthesisLevel(targetLevel, maxLevel);
+  const totalMaterials: Record<string, number> = {};
+
+  if (target <= current) {
+    return {
+      currentLevel: current,
+      targetLevel: target,
+      totalCores: 0,
+      totalMaterials
+    };
+  }
+
+  const materials = getSynthesisMaterials(law);
+  let totalCores = 0;
+
+  for (let level = current + 1; level <= target; level += 1) {
+    const materialAmount = law.requirements.materialPerLevel[level - 1] ?? 0;
+    totalCores += law.requirements.coresPerLevel[level - 1] ?? 0;
+
+    for (const material of materials) {
+      totalMaterials[material] = (totalMaterials[material] ?? 0) + materialAmount;
+    }
+  }
+
+  return {
+    currentLevel: current,
+    targetLevel: target,
+    totalCores,
+    totalMaterials
+  };
+}

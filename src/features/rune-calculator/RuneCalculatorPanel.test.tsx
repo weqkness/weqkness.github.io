@@ -193,4 +193,21 @@ describe('RuneCalculatorPanel', () => {
     expect(screen.getAllByText('4 minutes, 45 seconds').length).toBeGreaterThan(0);
     expect(screen.getAllByText('19 minutes, 36 seconds').length).toBeGreaterThan(0);
   });
+
+  it('calculates synthetization costs and buffs for a selected law', async () => {
+    const user = userEvent.setup();
+    render(<RuneCalculatorPanel marksData={testMarksData} scales={testScales} />);
+
+    await user.click(screen.getByRole('button', { name: 'Synthetization' }));
+
+    expect(screen.getByRole('heading', { name: 'Synthetization', level: 1 })).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Law'), 'Origin Law of Time');
+
+    expect(screen.getAllByText('5.5M').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('825 Solace + 825 Grace').length).toBeGreaterThan(0);
+    expect(screen.getByText('Solace + Grace')).toBeInTheDocument();
+    expect(screen.getAllByText(/Breakthrough Cost/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Level Breakdown' })).toBeInTheDocument();
+  });
 });

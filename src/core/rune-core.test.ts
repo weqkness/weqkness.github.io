@@ -9,11 +9,15 @@ import {
   calculateMilestoneEtaSeconds,
   calculateMilestoneOpensForTier,
   calculateMilestoneTotalOpens,
+  calculateSynthesisBuffValue,
+  calculateSynthesisTotals,
   findNextUnderHour,
   formatScaled,
+  getSynthesisMaterials,
   normalizeMilestoneLevel,
   parseScaled,
-  processMarks
+  processMarks,
+  type SynthesisLaw
 } from './rune-core';
 import type { MarkCategory, Scales } from '../types';
 
@@ -293,5 +297,56 @@ describe('material math', () => {
   it('returns never for invalid material inputs', () => {
     expect(calculateMaterialEstimate(0, 10).expectedSeconds).toBe(Infinity);
     expect(calculateMaterialEstimate(0.01, 0).expectedSeconds).toBe(Infinity);
+  });
+});
+
+describe('synthetization math', () => {
+  const lesserLaw: SynthesisLaw = {
+    name: 'Lesser Law of Perception',
+    category: 'Lesser',
+    buffs: [{ stat: 'Citizens', multiplier: 1.6, perLevel: true }],
+    requirements: {
+      material: 'Lucent',
+      materialPerLevel: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+      coresPerLevel: [25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 225000, 250000]
+    }
+  };
+
+  const greaterLaw: SynthesisLaw = {
+    name: 'Greater Law of Alacrity',
+    category: 'Greater',
+    buffs: [
+      { stat: 'Citizens', multiplier: 1.8, perLevel: true },
+      { stat: 'Divinity', multiplier: 1.8, perLevel: true }
+    ],
+    requirements: {
+      materials: ['Kismet', 'Morrow'],
+      materialPerLevel: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+      coresPerLevel: [50000, 100000, 150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000]
+    }
+  };
+
+  it('sums cores and single-material requirements to max a lesser law', () => {
+    const totals = calculateSynthesisTotals(lesserLaw, 0, 10);
+
+    expect(getSynthesisMaterials(lesserLaw)).toEqual(['Lucent']);
+    expect(totals.totalCores).toBe(1375000);
+    expect(totals.totalMaterials).toEqual({ Lucent: 275 });
+    expect(calculateSynthesisBuffValue(lesserLaw.buffs[0], 10)).toBeCloseTo(109.951);
+  });
+
+  it('sums each required material for multi-material laws', () => {
+    const totals = calculateSynthesisTotals(greaterLaw, 0, 10);
+
+    expect(getSynthesisMaterials(greaterLaw)).toEqual(['Kismet', 'Morrow']);
+    expect(totals.totalCores).toBe(2750000);
+    expect(totals.totalMaterials).toEqual({ Kismet: 550, Morrow: 550 });
+  });
+
+  it('only counts levels above the current synthetization level', () => {
+    const totals = calculateSynthesisTotals(lesserLaw, 8, 10);
+
+    expect(totals.totalCores).toBe(475000);
+    expect(totals.totalMaterials).toEqual({ Lucent: 95 });
   });
 });
